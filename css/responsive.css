@@ -1,0 +1,99 @@
+/* Responsive design */
+@media (max-width: 768px) {
+    .app-container {
+        flex-direction: column;
+    }
+    
+    .sidebar {
+        width: 100%;
+        height: auto;
+        padding: 16px;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+    }
+    
+    .sidebar-footer {
+        display: none;
+    }
+    
+    .chat-header {
+        padding: 16px 20px;
+        flex-direction: row;
+        align-items: center;
+    }
+    
+    .messages {
+        padding: 20px;
+    }
+    
+    .input-container {
+        padding: 16px 20px;
+    }
+    
+    .message {
+        max-width: 90%;
+    }
+    
+    .message-content {
+        font-size: 13px;
+    }
+    
+    .message-content table {
+        font-size: 0.8em;
+    }
+    
+    .right-sidebar {
+        width: 100%;
+        right: -100%;
+    }
+    
+    .right-sidebar-tabs {
+        overflow-x: auto;
+    }
+    
+    .tab-btn {
+        min-width: 80px;
+        font-size: 11px;
+    }
+}
+
+@media (max-width: 480px) {
+    .welcome-message {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .welcome-features {
+        justify-content: center;
+    }
+    
+    .chat-info {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    
+    #sendButton span {
+        display: none;
+    }
+    
+    .section-header {
+        padding: 16px 20px;
+    }
+    
+    .subsection {
+        padding: 12px 20px 0;
+    }
+    
+    .model-card {
+        padding: 12px;
+    }
+    
+    .model-name {
+        font-size: 13px;
+    }
+    
+    .chat-history-item {
+        padding: 10px;
+    }
+}

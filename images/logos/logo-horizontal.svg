@@ -1,0 +1,31 @@
+<svg viewBox="0 0 320 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="gradient1" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#8B5CF6"/>
+      <stop offset="1" stop-color="#06B6D4"/>
+    </linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge> 
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Icon -->
+  <rect x="5" y="5" width="40" height="40" rx="12" fill="url(#gradient1)" filter="url(#glow)"/>
+  <path d="M17 25C17 21.6863 19.6863 19 23 19H27C30.3137 19 33 21.6863 33 25C33 28.3137 30.3137 31 27 31H23C19.6863 31 17 28.3137 17 25Z" fill="white" fill-opacity="0.9"/>
+  <circle cx="23" cy="25" r="2" fill="url(#gradient1)"/>
+  <circle cx="27" cy="25" r="2" fill="url(#gradient1)"/>
+  <path d="M20 22L23 25L20 28M30 22L27 25L30 28" stroke="url(#gradient1)" stroke-width="1" opacity="0.6"/>
+  
+  <!-- Main Text -->
+  <text x="65" y="22" font-family="Inter, sans-serif" font-size="20" font-weight="700" fill="#F8FAFC">BrowserMind</text>
+  <text x="65" y="36" font-family="Inter, sans-serif" font-size="10" font-weight="400" fill="#94A3B8">AI That Lives in Your Browser</text>
+  
+  <!-- Tagline -->
+  <text x="230" y="22" font-family="Inter, sans-serif" font-size="12" font-weight="600" fill="#8B5CF6">Local</text>
+  <text x="230" y="32" font-family="Inter, sans-serif" font-size="12" font-weight="600" fill="#06B6D4">Private</text>
+  <text x="230" y="42" font-family="Inter, sans-serif" font-size="12" font-weight="600" fill="#10B981">Secure</text>
+</svg>

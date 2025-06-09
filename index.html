@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BrowserMind - AI That Lives in Your Browser</title>
+    
+    <!-- CSS Modules -->
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/sidebar.css">
+    <link rel="stylesheet" href="css/right-sidebar.css">
+    <link rel="stylesheet" href="css/chat.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/models.css">
+    <link rel="stylesheet" href="css/content.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Markdown and Mermaid Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/marked@9.1.6/marked.min.js"></script>
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.esm.min.mjs';
+        window.mermaid = mermaid;
+    </script>
+</head>
+<body>
+    <div class="app-container">
+        <div class="sidebar">
+            <div class="logo-section">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect width="40" height="40" rx="12" fill="url(#gradient1)"/>
+                            <path d="M12 20C12 16.6863 14.6863 14 18 14H22C25.3137 14 28 16.6863 28 20C28 23.3137 25.3137 26 22 26H18C14.6863 26 12 23.3137 12 20Z" fill="white" fill-opacity="0.9"/>
+                            <circle cx="18" cy="20" r="2" fill="url(#gradient1)"/>
+                            <circle cx="22" cy="20" r="2" fill="url(#gradient1)"/>
+                            <defs>
+                                <linearGradient id="gradient1" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+                                    <stop stop-color="#8B5CF6"/>
+                                    <stop offset="1" stop-color="#06B6D4"/>
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                    </div>
+                    <div class="logo-text">
+                        <h1>BrowserMind</h1>
+                        <p>AI in your browser</p>
+                    </div>
+                </div>
+                
+                <button class="new-chat-btn" id="newChatBtn" title="Start New Chat">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    New Chat
+                </button>
+                
+                <div class="status-section">
+                    <div class="status-indicator" id="status">
+                        <div class="status-dot"></div>
+                        <span>Initializing...</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="sidebar-footer">
+                <div class="info-card">
+                    <div class="info-icon">🧠</div>
+                    <div class="info-content">
+                        <h4>Local AI</h4>
+                        <p>Runs entirely in your browser. No data sent to servers.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="chat-header">
+                <div class="header-left">
+                    <h2>Chat with AI</h2>
+                    <div class="chat-info">
+                        <span class="model-info">Phi-3.5 Mini</span>
+                        <span class="separator">•</span>
+                        <span class="privacy-badge">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 1L3 5V11C3 16.55 6.84 21.74 12 23C17.16 21.74 21 16.55 21 11V5L12 1ZM12 7C13.4 7 14.8 8.6 14.8 10V11.2C15.4 11.2 16 11.8 16 12.4V16.8C16 17.4 15.4 18 14.8 18H9.2C8.6 18 8 17.4 8 16.8V12.4C8 11.8 8.6 11.2 9.2 11.2V10C9.2 8.6 10.6 7 12 7ZM12 8.2C11.2 8.2 10.4 8.9 10.4 10V11.2H13.6V10C13.6 8.9 12.8 8.2 12 8.2Z"/>
+                            </svg>
+                            Private
+                        </span>
+                    </div>
+                </div>
+                <button class="hamburger-btn" id="hamburgerBtn" title="Open Menu">
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                </button>
+            </div>
+        
+            <div class="progress-container" id="progressContainer">
+                <div class="progress-info">
+                    <div class="progress-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                            <polyline points="3.27,6.96 12,12.01 20.73,6.96"/>
+                            <line x1="12" y1="22.08" x2="12" y2="12"/>
+                        </svg>
+                    </div>
+                    <div class="progress-details">
+                        <h3>Loading AI Model</h3>
+                        <p id="progressText">Initializing...</p>
+                    </div>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+            </div>
+            
+            <div class="chat-container">
+                <div class="messages" id="messages">
+                    <div class="welcome-message">
+                        <div class="welcome-icon">🚀</div>
+                        <div class="welcome-content">
+                            <h3>Welcome to BrowserMind!</h3>
+                            <p>Your personal AI assistant that runs entirely in your browser. No servers, no data sharing - just pure local intelligence.</p>
+                            <div class="welcome-features">
+                                <span class="feature">🔒 Private</span>
+                                <span class="feature">⚡ Fast</span>
+                                <span class="feature">🌐 Offline</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="loading-indicator" id="loadingIndicator">
+                    <div class="thinking-animation">
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                    </div>
+                    <span>AI is thinking...</span>
+                </div>
+                
+                <div class="input-container">
+                    <div class="input-wrapper">
+                        <textarea 
+                            id="messageInput" 
+                            placeholder="Ask me anything... I'm running right here in your browser! 🤖" 
+                            rows="1"
+                            disabled
+                        ></textarea>
+                        <button class="emoji-btn" type="button" title="Add emoji">😊</button>
+                    </div>
+                    <button id="sendButton" disabled>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 2L11 13"/>
+                            <path d="M22 2L15 22L11 13L2 9L22 2Z"/>
+                        </svg>
+                        <span>Send</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Sidebar -->
+        <div class="right-sidebar" id="rightSidebar">
+            <div class="right-sidebar-header">
+                <button class="close-btn" id="closeSidebarBtn" title="Close Menu">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="right-sidebar-content">
+                <!-- Collapsible Sections -->
+                <div class="collapsible-section" data-section="chat">
+                    <div class="section-header" data-toggle="chat">
+                        <div class="section-info">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                            </svg>
+                            <span>Chat Management</span>
+                        </div>
+                        <div class="section-toggle">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="6,9 12,15 18,9"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="section-content expanded" id="chatSection">
+                        <div class="subsection">
+                            <h4>Actions</h4>
+                            <button class="action-btn history-btn" id="clearHistoryBtn" title="Clear Chat History">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6m3 0V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+                                    <line x1="10" y1="11" x2="10" y2="17"/>
+                                    <line x1="14" y1="11" x2="14" y2="17"/>
+                                </svg>
+                                Clear Chat History
+                            </button>
+                        </div>
+                        
+                        <div class="subsection">
+                            <h4>Chat History</h4>
+                            <div class="chat-history-list" id="chatHistoryList">
+                                <div class="chat-history-empty">
+                                    <p>No previous conversations</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="subsection">
+                            <h4>Export Conversation</h4>
+                            <div class="export-options">
+                                <button class="action-btn" id="exportMarkdownBtn" title="Export as Markdown">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                        <polyline points="14,2 14,8 20,8"/>
+                                        <line x1="16" y1="13" x2="8" y2="13"/>
+                                        <line x1="16" y1="17" x2="8" y2="17"/>
+                                        <polyline points="10,9 9,9 8,9"/>
+                                    </svg>
+                                    Export as Markdown
+                                </button>
+                                <button class="action-btn" id="exportJsonBtn" title="Export as JSON">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                        <polyline points="14,2 14,8 20,8"/>
+                                        <path d="M10 15l-2-2 2-2"/>
+                                        <path d="M14 11l2 2-2 2"/>
+                                    </svg>
+                                    Export as JSON
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="collapsible-section" data-section="models">
+                    <div class="section-header" data-toggle="models">
+                        <div class="section-info">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                            </svg>
+                            <span>AI Models</span>
+                        </div>
+                        <div class="section-toggle">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="6,9 12,15 18,9"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="section-content" id="modelsSection">
+                        <div class="subsection">
+                            <h4>Current Model</h4>
+                            <div class="current-model-info" id="currentModelInfo">
+                                <div class="model-card current">
+                                    <div class="model-icon">🤖</div>
+                                    <div class="model-details">
+                                        <div class="model-name">Phi-3.5 Mini Instruct</div>
+                                        <div class="model-size">~2.4GB</div>
+                                        <div class="model-status">Loaded</div>
+                                    </div>
+                                    <div class="model-badge current-badge">Current</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="subsection">
+                            <h4>Available Models</h4>
+                            <div class="model-list" id="modelList">
+                                <!-- Models will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="collapsible-section" data-section="settings">
+                    <div class="section-header" data-toggle="settings">
+                        <div class="section-info">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M12 1v6m0 10v6m11-7h-6m-10 0H1m15.5-6.5L19 5m-7 7L5 19m7-7L19 5m-7 7L5 5"/>
+                            </svg>
+                            <span>Settings</span>
+                        </div>
+                        <div class="section-toggle">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="6,9 12,15 18,9"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="section-content" id="settingsSection">
+                        <div class="subsection">
+                            <h4>Cache & Storage</h4>
+                            <button class="action-btn cache-btn" id="clearCacheBtn" title="Clear Model Cache">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+                                    <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+                                    <path d="m9 14 2 2 4-4"/>
+                                </svg>
+                                Clear Model Cache
+                            </button>
+                            <button class="action-btn danger-btn" id="clearAllBtn" title="Reset Everything">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M3 6h18l-1.5 14.5a2 2 0 0 1-2 1.5H6.5a2 2 0 0 1-2-1.5L3 6ZM8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                    <line x1="10" y1="11" x2="10" y2="17"/>
+                                    <line x1="14" y1="11" x2="14" y2="17"/>
+                                </svg>
+                                Reset Everything
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Overlay for mobile -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    </div>
+
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>

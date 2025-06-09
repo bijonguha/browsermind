@@ -1,0 +1,187 @@
+/* Markdown content styling */
+.message-content {
+    line-height: 1.6;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    max-width: 100%;
+}
+
+.message-content h1,
+.message-content h2,
+.message-content h3,
+.message-content h4,
+.message-content h5,
+.message-content h6 {
+    margin: 16px 0 8px 0;
+    font-weight: 600;
+    color: inherit;
+}
+
+.message-content h1 { font-size: 1.5em; }
+.message-content h2 { font-size: 1.3em; }
+.message-content h3 { font-size: 1.1em; }
+
+.message-content p {
+    margin: 8px 0;
+}
+
+.message-content ul,
+.message-content ol {
+    margin: 8px 0;
+    padding-left: 20px;
+}
+
+.message-content li {
+    margin: 4px 0;
+}
+
+.message-content blockquote {
+    border-left: 3px solid #8b5cf6;
+    padding-left: 16px;
+    margin: 12px 0;
+    font-style: italic;
+    opacity: 0.9;
+}
+
+.message-content code {
+    background: rgba(30, 41, 59, 0.8);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.9em;
+}
+
+.message-content pre {
+    background: rgba(30, 41, 59, 0.8);
+    padding: 12px;
+    border-radius: 8px;
+    overflow-x: auto;
+    margin: 12px 0;
+    border: 1px solid rgba(148, 163, 184, 0.1);
+    max-width: 100%;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.message-content pre code {
+    background: none;
+    padding: 0;
+}
+
+.message-content table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 12px 0;
+    font-size: 0.9em;
+    overflow-x: auto;
+    display: block;
+    white-space: nowrap;
+}
+
+.message-content table thead,
+.message-content table tbody,
+.message-content table tr {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+}
+
+.message-content th,
+.message-content td {
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    padding: 8px 12px;
+    text-align: left;
+}
+
+.message-content th {
+    background: rgba(30, 41, 59, 0.5);
+    font-weight: 600;
+}
+
+.message-content a {
+    color: #06b6d4;
+    text-decoration: none;
+}
+
+.message-content a:hover {
+    text-decoration: underline;
+}
+
+/* Mermaid diagram styling */
+.mermaid-container {
+    background: rgba(248, 250, 252, 0.05);
+    padding: 16px;
+    border-radius: 8px;
+    margin: 12px 0;
+    overflow-x: auto;
+    border: 1px solid rgba(148, 163, 184, 0.1);
+    max-width: 100%;
+}
+
+.mermaid-container .mermaid {
+    display: flex;
+    justify-content: center;
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+.mermaid-container .mermaid svg {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Mermaid error styling */
+.mermaid-error {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 8px;
+    padding: 16px;
+    color: #fca5a5;
+}
+
+.mermaid-error h4 {
+    margin: 0 0 12px 0;
+    color: #ef4444;
+    font-size: 16px;
+}
+
+.mermaid-error p {
+    margin: 8px 0;
+    line-height: 1.5;
+}
+
+.mermaid-error details {
+    margin: 12px 0;
+    background: rgba(30, 41, 59, 0.5);
+    border-radius: 6px;
+    padding: 8px;
+}
+
+.mermaid-error summary {
+    cursor: pointer;
+    font-weight: 500;
+    padding: 4px;
+    color: #cbd5e1;
+}
+
+.mermaid-error summary:hover {
+    color: #f8fafc;
+}
+
+.mermaid-error pre {
+    margin: 8px 0 0 0;
+    padding: 8px;
+    background: rgba(15, 23, 42, 0.8);
+    border-radius: 4px;
+    overflow-x: auto;
+    font-size: 12px;
+}
+
+.mermaid-error a {
+    color: #06b6d4;
+    text-decoration: none;
+}
+
+.mermaid-error a:hover {
+    text-decoration: underline;
+}
