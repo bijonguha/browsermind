@@ -1,0 +1,8 @@
+{
+  "version": "0.1.0-alpha",
+  "name": "BrowserMind",
+  "description": "Local AI assistant running in your browser",
+  "build": {
+    "date": "2024-06-10"
+  }
+}

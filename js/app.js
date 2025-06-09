@@ -16,6 +16,7 @@ class BrowserMindApp {
         this.initializeMarkdown();
         this.restoreConversation();
         this.initializeModels();
+        this.loadVersionInfo();
         
         // Ensure DOM is fully ready and UI elements are available
         this.waitForDOMReady().then(() => {
@@ -533,6 +534,23 @@ class BrowserMindApp {
             }
         } else {
             console.warn('Mermaid library failed to load');
+        }
+    }
+
+    async loadVersionInfo() {
+        try {
+            const response = await fetch('./version.json');
+            const versionData = await response.json();
+            
+            // Update version display
+            const versionElement = document.getElementById('appVersion');
+            if (versionElement) {
+                versionElement.textContent = versionData.version;
+            }
+            
+            console.log(`🚀 BrowserMind v${versionData.version} loaded`);
+        } catch (error) {
+            console.warn('Could not load version info:', error);
         }
     }
 }
