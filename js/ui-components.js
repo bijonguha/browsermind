@@ -44,9 +44,81 @@ export class UIComponents {
         this.sidebarOverlay = document.getElementById('sidebarOverlay');
         this.chatHistoryList = document.getElementById('chatHistoryList');
         
+        // AI Status Compact
+        this.aiStatusCompact = document.getElementById('aiStatusCompact');
+        this.aiStatusClose = document.getElementById('aiStatusClose');
+        
         // Collapsible sections
         this.sectionHeaders = document.querySelectorAll('.section-header');
         this.collapsibleSections = document.querySelectorAll('.collapsible-section');
+        
+        // Initialize AI status close handler
+        this.initializeAIStatusHandler();
+        
+        // Add temporary test method to window for debugging
+        window.testAIStatus = () => {
+            console.log('🧪 Testing AI status transformation');
+            this.transformProgressToStatus();
+        };
+    }
+
+    initializeAIStatusHandler() {
+        if (this.aiStatusClose) {
+            this.aiStatusClose.addEventListener('click', () => {
+                this.hideAIStatusCompact();
+            });
+        }
+    }
+
+    showAIStatusCompact() {
+        if (this.aiStatusCompact) {
+            console.log('🎉 Showing AI Ready status indicator');
+            this.aiStatusCompact.classList.add('show');
+            
+            // Auto-hide after 8 seconds
+            setTimeout(() => {
+                this.hideAIStatusCompact();
+            }, 8000);
+        } else {
+            console.warn('⚠️ AI status compact element not found');
+        }
+    }
+
+    hideAIStatusCompact() {
+        if (this.aiStatusCompact) {
+            console.log('👋 Hiding AI Ready status indicator');
+            this.aiStatusCompact.classList.remove('show');
+            this.aiStatusCompact.classList.add('hide');
+            
+            // Remove hide class after animation
+            setTimeout(() => {
+                this.aiStatusCompact.classList.remove('hide');
+            }, 400);
+        }
+    }
+
+    transformProgressToStatus() {
+        if (!this.progressContainer) {
+            console.warn('⚠️ Progress container not found for transformation');
+            return;
+        }
+        
+        console.log('🔄 Transforming progress container to status indicator');
+        
+        // Add completing animation to progress container
+        this.progressContainer.classList.add('completing');
+        
+        // Wait for animation to complete, then show status indicator
+        setTimeout(() => {
+            console.log('📦 Progress container minimized, showing status indicator');
+            
+            // Completely remove from DOM to ensure layout reflows
+            this.progressContainer.style.display = 'none';
+            this.progressContainer.remove();
+            
+            // Show the compact status indicator
+            this.showAIStatusCompact();
+        }, 1200); // Match the animation duration
     }
 
     updateStatus(text, type = 'loading') {
@@ -119,8 +191,15 @@ export class UIComponents {
         console.log(`📊 Updating progress: ${percentage}% - ${text}`);
         
         // Mark as completed when we reach 100% or get "Ready" message
-        if (percentage >= 100 || (text && text.includes('Ready'))) {
-            this.progressCompleted = true;
+        if (percentage >= 100 || (text && (text.includes('Ready') || text.includes('🎉')))) {
+            if (!this.progressCompleted) {
+                this.progressCompleted = true;
+                console.log('✅ Progress completed! Scheduling transformation...');
+                // Trigger transformation after a short delay to let final progress update show
+                setTimeout(() => {
+                    this.transformProgressToStatus();
+                }, 1500);
+            }
         }
         
         // Initialize start time if not set

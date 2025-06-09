@@ -43,6 +43,38 @@
         font-size: 0.8em;
     }
     
+    .progress-container {
+        margin: 16px;
+        padding: 20px;
+    }
+    
+    .progress-header {
+        flex-direction: column;
+        gap: 12px;
+        text-align: center;
+    }
+    
+    .progress-icon {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .progress-details h3 {
+        font-size: 18px;
+    }
+    
+    .progress-stats {
+        flex-direction: column;
+        gap: 8px;
+        padding: 16px;
+    }
+    
+    .progress-stat {
+        flex-direction: row;
+        justify-content: space-between;
+        width: 100%;
+    }
+    
     .right-sidebar {
         width: 100%;
         right: -100%;
@@ -95,5 +127,57 @@
     
     .chat-history-item {
         padding: 10px;
+    }
+    
+    .progress-container {
+        margin: 12px;
+        padding: 16px;
+    }
+    
+    .progress-details h3 {
+        font-size: 16px;
+    }
+    
+    .progress-main-text {
+        font-size: 14px;
+    }
+    
+    .progress-sub-text {
+        font-size: 12px;
+    }
+    
+    .progress-stats {
+        padding: 12px;
+    }
+    
+    .progress-stat-label {
+        font-size: 10px;
+    }
+    
+    .progress-stat-value {
+        font-size: 13px;
+    }
+    
+    .progress-tip {
+        padding: 10px 12px;
+    }
+    
+    .progress-tip-text {
+        font-size: 12px;
+    }
+    
+    .ai-status-compact {
+        right: 16px;
+        padding: 6px 12px;
+        font-size: 11px;
+    }
+    
+    .ai-status-icon {
+        width: 14px;
+        height: 14px;
+    }
+    
+    .ai-status-text {
+        font-size: 11px;
     }
 }
