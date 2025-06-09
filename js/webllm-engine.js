@@ -4,7 +4,7 @@ export class WebLLMEngine {
     constructor() {
         this.engine = null;
         this.isLoading = false;
-        this.currentModel = "Phi-3.5-mini-instruct-q4f16_1-MLC";
+        this.currentModel = "Llama-3.2-1B-Instruct-q4f16_1-MLC";
         this.availableModels = this.getAvailableModels();
         this.systemPrompt = "You are a helpful AI assistant running in the user's browser. You have access to our conversation history and can reference previous messages.";
         this.loadSavedModel();
@@ -19,7 +19,7 @@ export class WebLLMEngine {
                 description: "Fast and efficient small language model, perfect for chat and general tasks",
                 icon: "🤖",
                 features: ["Chat", "Code", "Reasoning"],
-                status: "loaded"
+                status: "available"
             },
             {
                 id: "Llama-3.2-3B-Instruct-q4f16_1-MLC",
@@ -55,7 +55,7 @@ export class WebLLMEngine {
                 description: "Ultra-compact model for basic chat tasks",
                 icon: "🚀",
                 features: ["Chat", "Ultra-fast", "Minimal"],
-                status: "available"
+                status: "loaded"
             }
         ];
     }
