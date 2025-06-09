@@ -1,11 +1,15 @@
 # 🧠 BrowserMind
 
-**AI That Lives in Your Browser** - A private, secure, and powerful AI chat interface that runs entirely in your web browser using WebLLM and WebGPU.
+<div align="center">
+  <img src="images/logos/logo-primary.svg" alt="BrowserMind Logo" width="300">
+  
+  **AI That Lives in Your Browser** - A private, secure, and powerful AI chat interface that runs entirely in your web browser using WebLLM and WebGPU.
 
-![BrowserMind](https://img.shields.io/badge/AI-Local%20%26%20Private-brightgreen)
-![WebGPU](https://img.shields.io/badge/WebGPU-Enabled-blue)
-![ES6 Modules](https://img.shields.io/badge/ES6-Modules-yellow)
-![No Server](https://img.shields.io/badge/Server-None%20Required-red)
+  ![BrowserMind](https://img.shields.io/badge/AI-Local%20%26%20Private-brightgreen)
+  ![WebGPU](https://img.shields.io/badge/WebGPU-Enabled-blue)
+  ![ES6 Modules](https://img.shields.io/badge/ES6-Modules-yellow)
+  ![No Server](https://img.shields.io/badge/Server-None%20Required-red)
+</div>
 
 ## ✨ Features
 
