@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BrowserMind - AI That Lives in Your Browser</title>
     
+    <!-- Favicons -->
+    <link rel="icon" type="image/svg+xml" href="images/icons/favicon.svg">
+    <link rel="apple-touch-icon" href="images/icons/app-icon-192.svg">
+    
     <!-- CSS Modules -->
     <link rel="stylesheet" href="css/base.css">
     <link rel="stylesheet" href="css/sidebar.css">
@@ -83,7 +87,7 @@
                 <div class="header-left">
                     <h2>Chat with AI</h2>
                     <div class="chat-info">
-                        <span class="model-info">Phi-3.5 Mini</span>
+                        <span class="model-info" id="headerModelInfo">Phi-3.5 Mini</span>
                         <span class="separator">•</span>
                         <span class="privacy-badge">
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
@@ -102,20 +106,47 @@
         
             <div class="progress-container" id="progressContainer">
                 <div class="progress-info">
-                    <div class="progress-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
-                            <polyline points="3.27,6.96 12,12.01 20.73,6.96"/>
-                            <line x1="12" y1="22.08" x2="12" y2="12"/>
-                        </svg>
+                    <div class="progress-header">
+                        <div class="progress-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                                <polyline points="3.27,6.96 12,12.01 20.73,6.96"/>
+                                <line x1="12" y1="22.08" x2="12" y2="12"/>
+                            </svg>
+                        </div>
+                        <div class="progress-details">
+                            <h3>Setting up your AI</h3>
+                        </div>
                     </div>
-                    <div class="progress-details">
-                        <h3>Loading AI Model</h3>
-                        <p id="progressText">Initializing...</p>
+                    
+                    <div class="progress-status">
+                        <p class="progress-main-text" id="progressMainText">Preparing your local AI assistant...</p>
+                        <p class="progress-sub-text" id="progressSubText">This may take a moment on first visit</p>
+                        
+                        <div class="progress-stats" id="progressStats" style="display: none;">
+                            <div class="progress-stat">
+                                <span class="progress-stat-label">Downloaded</span>
+                                <span class="progress-stat-value" id="progressDownloaded">0 MB</span>
+                            </div>
+                            <div class="progress-stat">
+                                <span class="progress-stat-label">Progress</span>
+                                <span class="progress-stat-value" id="progressPercent">0%</span>
+                            </div>
+                            <div class="progress-stat">
+                                <span class="progress-stat-label">Time</span>
+                                <span class="progress-stat-value" id="progressTime">0s</span>
+                            </div>
+                        </div>
                     </div>
-                </div>
-                <div class="progress-bar">
-                    <div class="progress-fill" id="progressFill"></div>
+                    
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    
+                    <div class="progress-tip" id="progressTip" style="display: none;">
+                        <span class="progress-tip-icon">💡</span>
+                        <p class="progress-tip-text">First-time setup downloads the AI model to your browser. Future visits will be much faster!</p>
+                    </div>
                 </div>
             </div>
             

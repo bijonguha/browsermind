@@ -5,6 +5,8 @@ import { SidebarManager } from './sidebar-manager.js';
 
 class BrowserMindApp {
     constructor() {
+        console.log('🚀 BrowserMind initializing...');
+        
         this.engine = new WebLLMEngine();
         this.chatManager = new ChatManager();
         this.ui = new UIComponents();
@@ -14,7 +16,23 @@ class BrowserMindApp {
         this.initializeMarkdown();
         this.restoreConversation();
         this.initializeModels();
-        this.initializeEngine();
+        
+        // Ensure DOM is fully ready and UI elements are available
+        this.waitForDOMReady().then(() => {
+            this.initializeEngine();
+        });
+    }
+
+    async waitForDOMReady() {
+        // Wait for the next frame to ensure all elements are rendered
+        return new Promise(resolve => {
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    // Double requestAnimationFrame to ensure complete rendering
+                    resolve();
+                });
+            });
+        });
     }
 
     setupEventListeners() {
@@ -69,26 +87,60 @@ class BrowserMindApp {
 
     async initializeEngine() {
         try {
+            console.log('🔧 Starting engine initialization...');
+            console.log('🔍 Checking UI elements availability:', {
+                progressContainer: !!this.ui.progressContainer,
+                progressFill: !!this.ui.progressFill,
+                progressText: !!this.ui.progressText
+            });
+            
+            // Show progress immediately with enhanced visibility
+            console.log('🎬 Showing initial progress...');
+            this.ui.showProgress(true);
+            this.ui.updateProgress(0, 'Initializing...');
+            
+            // Add a small delay to ensure progress is visible before starting heavy operations
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
             await this.engine.initializeEngine(
                 (report) => {
                     const percentage = Math.round(report.progress * 100);
+                    console.log(`📈 Progress: ${percentage}% - ${report.text}`);
                     this.ui.updateProgress(percentage, report.text || 'Loading...');
                 },
-                (text, type) => this.ui.updateStatus(text, type)
+                (text, type) => {
+                    console.log(`📊 Status: ${text} (${type})`);
+                    this.ui.updateStatus(text, type);
+                }
             );
 
-            this.ui.showProgress(false);
-            this.ui.setInputEnabled(true);
-            this.ui.messageInput.placeholder = 'Type your message here...';
+            console.log('✅ Engine initialization completed');
+            
+            // Show completion state briefly before hiding
+            this.ui.updateProgress(100, 'Ready!');
+            
+            // Small delay to ensure all WebLLM callbacks are processed and user sees completion
+            setTimeout(() => {
+                this.ui.showProgress(false);
+                this.ui.setInputEnabled(true);
+                this.ui.messageInput.placeholder = 'Type your message here...';
 
-            // Remove the welcome message and show success
-            const welcomeMessage = this.ui.messagesElement.querySelector('.welcome-message');
-            if (welcomeMessage) {
-                welcomeMessage.remove();
-            }
-            this.ui.addMessage('🎉 BrowserMind is ready! Your AI assistant is now running locally in your browser. All conversations stay private and secure.', 'system', false);
+                // Update header with current model name
+                const currentModel = this.engine.getCurrentModel();
+                if (currentModel) {
+                    this.ui.updateHeaderModelName(currentModel.name);
+                }
+
+                // Remove the welcome message and show success
+                const welcomeMessage = this.ui.messagesElement.querySelector('.welcome-message');
+                if (welcomeMessage) {
+                    welcomeMessage.remove();
+                }
+                this.ui.addMessage('🎉 BrowserMind is ready! Your AI assistant is now running locally in your browser. All conversations stay private and secure.', 'system', false);
+            }, 1500); // 1.5 second delay to show completion state
 
         } catch (error) {
+            console.error('❌ Engine initialization failed:', error);
             this.ui.showProgress(false);
             
             let errorMessage = 'Failed to load the AI model. ';
@@ -222,6 +274,7 @@ class BrowserMindApp {
         try {
             this.ui.setInputEnabled(false);
             this.ui.showProgress(true);
+            this.ui.updateProgress(0, 'Preparing model switch...');
             this.sidebar.renderModelList(this.engine.availableModels, this.engine.currentModel);
 
             await this.engine.switchModel(
@@ -239,6 +292,9 @@ class BrowserMindApp {
             this.ui.showProgress(false);
             this.ui.setInputEnabled(true);
 
+            // Update header with new model name
+            this.ui.updateHeaderModelName(model.name);
+
             // Add system message about model switch
             this.ui.addMessage(`🔄 Switched to ${model.name}! Model loaded and ready.`, 'system', false);
 
@@ -253,6 +309,12 @@ class BrowserMindApp {
         this.sidebar.renderModelList(this.engine.availableModels, this.engine.currentModel);
         this.sidebar.updateCurrentModelDisplay(this.engine.getCurrentModel());
         this.updateChatHistoryDisplay();
+        
+        // Initialize header with current model name
+        const currentModel = this.engine.getCurrentModel();
+        if (currentModel) {
+            this.ui.updateHeaderModelName(currentModel.name);
+        }
     }
 
     exportConversation(format = 'json') {

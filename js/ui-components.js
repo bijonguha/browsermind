@@ -8,7 +8,15 @@ export class UIComponents {
         this.statusElement = document.getElementById('status');
         this.progressContainer = document.getElementById('progressContainer');
         this.progressFill = document.getElementById('progressFill');
-        this.progressText = document.getElementById('progressText');
+        this.progressMainText = document.getElementById('progressMainText');
+        this.progressSubText = document.getElementById('progressSubText');
+        this.progressStats = document.getElementById('progressStats');
+        this.progressDownloaded = document.getElementById('progressDownloaded');
+        this.progressPercent = document.getElementById('progressPercent');
+        this.progressTime = document.getElementById('progressTime');
+        this.progressTip = document.getElementById('progressTip');
+        this.startTime = null;
+        this.progressCompleted = false;
         
         // Chat elements
         this.messagesElement = document.getElementById('messages');
@@ -27,6 +35,7 @@ export class UIComponents {
         // Model elements
         this.modelList = document.getElementById('modelList');
         this.currentModelInfo = document.getElementById('currentModelInfo');
+        this.headerModelInfo = document.getElementById('headerModelInfo');
         
         // Sidebar elements
         this.hamburgerBtn = document.getElementById('hamburgerBtn');
@@ -41,6 +50,10 @@ export class UIComponents {
     }
 
     updateStatus(text, type = 'loading') {
+        if (!this.statusElement) {
+            console.warn('Status element not found');
+            return;
+        }
         const statusSpan = this.statusElement.querySelector('span');
         if (statusSpan) {
             statusSpan.textContent = text;
@@ -49,12 +62,214 @@ export class UIComponents {
     }
 
     showProgress(show = true) {
-        this.progressContainer.classList.toggle('show', show);
+        if (!this.progressContainer) {
+            console.warn('Progress container not found');
+            return;
+        }
+        
+        console.log(`🎯 Setting progress visibility: ${show}`);
+        
+        if (show) {
+            // Reset state for new progress session
+            this.startTime = null;
+            this.progressCompleted = false;
+            if (this.progressStats) this.progressStats.style.display = 'none';
+            if (this.progressTip) this.progressTip.style.display = 'none';
+            
+            // Reset progress display to initial state
+            if (this.progressMainText) this.progressMainText.textContent = 'Preparing your local AI assistant...';
+            if (this.progressSubText) this.progressSubText.textContent = 'This may take a moment on first visit';
+            if (this.progressFill) this.progressFill.style.width = '0%';
+            
+            // Initialize loading animation on icon
+            const progressIcon = this.progressContainer?.querySelector('.progress-icon');
+            if (progressIcon) {
+                progressIcon.classList.add('loading');
+                progressIcon.classList.remove('completing');
+            }
+            
+            // Force display immediately
+            this.progressContainer.style.display = 'flex';
+            this.progressContainer.classList.add('show');
+            
+            // Ensure it's visible in the next frame
+            requestAnimationFrame(() => {
+                this.progressContainer.style.opacity = '1';
+                this.progressContainer.style.visibility = 'visible';
+                this.progressContainer.style.transform = 'translateY(0)';
+            });
+        } else {
+            this.progressContainer.classList.remove('show');
+            // Reset timer and animation when hiding
+            this.startTime = null;
+            this.progressCompleted = false;
+            const progressIcon = this.progressContainer?.querySelector('.progress-icon');
+            if (progressIcon) {
+                progressIcon.classList.remove('loading', 'completing');
+            }
+        }
     }
 
     updateProgress(percentage, text) {
-        this.progressFill.style.width = `${percentage}%`;
-        this.progressText.textContent = text;
+        if (!this.progressFill) {
+            console.warn('Progress elements not found');
+            return;
+        }
+        
+        console.log(`📊 Updating progress: ${percentage}% - ${text}`);
+        
+        // Mark as completed when we reach 100% or get "Ready" message
+        if (percentage >= 100 || (text && text.includes('Ready'))) {
+            this.progressCompleted = true;
+        }
+        
+        // Initialize start time if not set
+        if (!this.startTime && percentage > 0) {
+            this.startTime = Date.now();
+        }
+        
+        // Ensure percentage is within bounds
+        const clampedPercentage = Math.max(0, Math.min(100, percentage));
+        
+        // Update progress bar width
+        this.progressFill.style.width = `${clampedPercentage}%`;
+        
+        // Parse and display user-friendly progress information
+        const progressInfo = this.parseProgressText(text, clampedPercentage);
+        this.updateProgressDisplay(progressInfo, clampedPercentage);
+    }
+
+    parseProgressText(text, percentage) {
+        if (!text) return { main: 'Loading...', sub: '', showStats: false };
+        
+        // Parse technical WebLLM messages into user-friendly format
+        if (text.includes('Fetching param cache')) {
+            const match = text.match(/Fetching param cache\[(\d+)\/(\d+)\]: (\d+)MB fetched\. (\d+)% completed, (\d+) secs elapsed/);
+            if (match) {
+                const [, current, total, mbFetched, percent, seconds] = match;
+                return {
+                    main: `Downloading AI model...`,
+                    sub: `Getting your AI ready - this creates a local copy for privacy`,
+                    showStats: true,
+                    downloaded: mbFetched,
+                    time: seconds,
+                    showTip: true
+                };
+            }
+        }
+        
+        // Handle WebGPU loading messages and fix the typo
+        if (text.includes('Finish loading on WebGPU')) {
+            return {
+                main: 'Finalizing AI setup...',
+                sub: 'Almost ready to chat!',
+                showStats: true,
+                showTip: false,
+                isCompleting: true
+            };
+        }
+        
+        if (text.includes('Finished loading on WebGPU')) {
+            return {
+                main: 'AI setup complete!',
+                sub: 'Your assistant is ready',
+                showStats: true,
+                showTip: false,
+                isCompleting: true
+            };
+        }
+        
+        // Handle other progress messages
+        if (text.includes('Loading')) {
+            return {
+                main: 'Loading AI model...',
+                sub: 'Almost ready to chat!',
+                showStats: percentage > 5,
+                showTip: false
+            };
+        }
+        
+        if (text.includes('Initializing') || text.includes('Starting')) {
+            return {
+                main: 'Starting up your AI assistant...',
+                sub: 'Preparing everything for you',
+                showStats: false,
+                showTip: false
+            };
+        }
+        
+        if (text.includes('Ready') || text.includes('Completed')) {
+            return {
+                main: '🎉 AI Ready!',
+                sub: 'Your personal assistant is loaded and ready to chat',
+                showStats: true,
+                showTip: false,
+                isCompleting: true
+            };
+        }
+        
+        // Default fallback for unknown messages
+        return {
+            main: text.length > 50 ? 'Setting up your AI...' : text,
+            sub: text.length > 50 ? 'This may take a moment' : 'Getting everything ready',
+            showStats: percentage > 10,
+            showTip: percentage > 5 && percentage < 90
+        };
+    }
+
+    updateProgressDisplay(info, percentage) {
+        // Update main text
+        if (this.progressMainText && info.main) {
+            this.progressMainText.textContent = info.main;
+        }
+        
+        // Update sub text
+        if (this.progressSubText && info.sub) {
+            this.progressSubText.textContent = info.sub;
+        }
+        
+        // Update icon animation based on completion state
+        const progressIcon = this.progressContainer?.querySelector('.progress-icon');
+        if (progressIcon) {
+            if (info.isCompleting || percentage >= 100) {
+                // Stop loading animation and show completion state
+                progressIcon.classList.remove('loading');
+                progressIcon.classList.add('completing');
+            } else {
+                // Show loading animation
+                progressIcon.classList.add('loading');
+                progressIcon.classList.remove('completing');
+            }
+        }
+        
+        // Update stats if available
+        if (this.progressStats) {
+            if (info.showStats) {
+                this.progressStats.style.display = 'flex';
+                
+                if (this.progressPercent) {
+                    this.progressPercent.textContent = `${Math.round(percentage)}%`;
+                }
+                
+                if (this.progressDownloaded && info.downloaded) {
+                    this.progressDownloaded.textContent = `${info.downloaded} MB`;
+                }
+                
+                if (this.progressTime && info.time) {
+                    this.progressTime.textContent = `${info.time}s`;
+                } else if (this.progressTime && this.startTime) {
+                    const elapsed = Math.round((Date.now() - this.startTime) / 1000);
+                    this.progressTime.textContent = `${elapsed}s`;
+                }
+            } else {
+                this.progressStats.style.display = 'none';
+            }
+        }
+        
+        // Show/hide tip
+        if (this.progressTip) {
+            this.progressTip.style.display = info.showTip ? 'block' : 'none';
+        }
     }
 
     showLoading(show = true) {
@@ -412,5 +627,29 @@ export class UIComponents {
             buttonElement.title = originalTitle;
             buttonElement.innerHTML = originalHTML;
         }, 2000);
+    }
+
+    updateHeaderModelName(modelName) {
+        if (!this.headerModelInfo) {
+            console.warn('Header model info element not found');
+            return;
+        }
+        
+        // Extract just the short name from the full model name
+        let shortName = modelName;
+        if (modelName.includes('Phi-3.5')) {
+            shortName = 'Phi-3.5 Mini';
+        } else if (modelName.includes('Llama-3.2-3B')) {
+            shortName = 'Llama 3.2 3B';
+        } else if (modelName.includes('Llama-3.2-1B')) {
+            shortName = 'Llama 3.2 1B';
+        } else if (modelName.includes('Qwen2.5-3B')) {
+            shortName = 'Qwen 2.5 3B';
+        } else if (modelName.includes('gemma-2-2b')) {
+            shortName = 'Gemma 2 2B';
+        }
+        
+        this.headerModelInfo.textContent = shortName;
+        console.log(`🏷️ Updated header model name to: ${shortName}`);
     }
 }
