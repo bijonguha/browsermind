@@ -437,3 +437,31 @@
     width: 12px;
     height: 12px;
 }
+
+/* Version info */
+.version-info {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px;
+    background: rgba(30, 41, 59, 0.3);
+    border-radius: 8px;
+    border: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.version-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+}
+
+.version-label {
+    color: #94a3b8;
+    font-weight: 500;
+}
+
+.version-value {
+    color: #e2e8f0;
+    font-weight: 600;
+}
