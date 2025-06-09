@@ -63,6 +63,16 @@ cd browsermind
 python -m http.server 8000  # Optional: for local development
 ```
 
+### Quick Setup with Favicon
+
+To add the BrowserMind favicon to your HTML head:
+
+```html
+<!-- Add to index.html <head> section -->
+<link rel="icon" type="image/svg+xml" href="images/icons/favicon.svg">
+<link rel="apple-touch-icon" href="images/icons/app-icon-192.svg">
+```
+
 ## 🏗️ Architecture
 
 ### Modular Design
@@ -72,6 +82,11 @@ BrowserMind is built with a clean, modular architecture:
 ```
 browsermind/
 ├── index.html              # Main HTML structure
+├── images/                 # Visual assets & branding
+│   ├── logos/             # Brand logos (SVG)
+│   ├── icons/             # App icons & favicons
+│   ├── screenshots/       # Application screenshots
+│   └── social/            # Social media assets
 ├── css/                    # Stylesheets (modular)
 │   ├── base.css           # Core styles & animations
 │   ├── sidebar.css        # Left sidebar components
@@ -87,6 +102,7 @@ browsermind/
 │   ├── chat-manager.js    # Conversation history & management
 │   ├── ui-components.js   # UI rendering & interactions
 │   └── sidebar-manager.js # Sidebar state & collapsible sections
+├── LICENSE                 # MIT License
 └── README.md              # This file
 ```
 
@@ -207,6 +223,30 @@ php -S localhost:8000
 - **CSS Grid/Flexbox** - Modern layout systems
 - **ES6 Modules** - Clean, maintainable JavaScript
 
+## 🎨 Visual Assets
+
+BrowserMind includes a comprehensive set of visual assets:
+
+### Brand Assets
+| Asset | File | Description |
+|-------|------|-------------|
+| 🎨 Primary Logo | `images/logos/logo-primary.svg` | Main logo with text |
+| 🔶 Logo Mark | `images/logos/logo-mark.svg` | Icon-only version |
+| ↔️ Horizontal Logo | `images/logos/logo-horizontal.svg` | Wide format with tagline |
+| ⚪ Light Version | `images/logos/logo-white.svg` | For dark backgrounds |
+
+### App Icons
+| Size | File | Usage |
+|------|------|-------|
+| 32×32 | `images/icons/favicon.svg` | Browser favicon |
+| 192×192 | `images/icons/app-icon-192.svg` | PWA icon |
+| Various | `images/icons/` | Feature icons |
+
+<div align="center">
+  <img src="images/logos/logo-mark.svg" alt="BrowserMind Icon" width="80">
+  <img src="images/logos/logo-horizontal.svg" alt="BrowserMind Horizontal" width="250">
+</div>
+
 ## 📝 Configuration
 
 ### Model Configuration
@@ -326,6 +366,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Marked.js** - Excellent markdown parsing
 - **Mermaid.js** - Beautiful diagram rendering
 - **WebGPU Working Group** - For the WebGPU specification
+- **Inter Font** - Beautiful typography from Google Fonts
+- **JetBrains Mono** - Excellent monospace font for code
 
 ## 📞 Support
 
