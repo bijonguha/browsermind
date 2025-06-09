@@ -1,5 +1,3 @@
-# 🧠 BrowserMind
-
 <div align="center">
   <img src="images/logos/logo-primary.svg" alt="BrowserMind Logo" width="300">
   
