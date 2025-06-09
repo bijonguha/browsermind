@@ -7,6 +7,8 @@
   ![WebGPU](https://img.shields.io/badge/WebGPU-Enabled-blue)
   ![ES6 Modules](https://img.shields.io/badge/ES6-Modules-yellow)
   ![No Server](https://img.shields.io/badge/Server-None%20Required-red)
+
+  **[🚀 Try it here](https://browsermind.vercel.app/)**
 </div>
 
 ## ✨ Features
