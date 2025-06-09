@@ -356,10 +356,22 @@ export class UIComponents {
     }
 
     setInputEnabled(enabled) {
-        this.messageInput.disabled = !enabled;
-        this.sendButton.disabled = !enabled;
-        if (enabled) {
+        // Check both engine status and authentication
+        const isAuthenticated = window.authManager && window.authManager.isAuthenticated();
+        const shouldEnable = enabled && isAuthenticated;
+        
+        this.messageInput.disabled = !shouldEnable;
+        this.sendButton.disabled = !shouldEnable;
+        
+        if (shouldEnable) {
             this.messageInput.focus();
+        }
+        
+        // Update placeholder based on auth status
+        if (!isAuthenticated) {
+            this.messageInput.placeholder = "Please sign in to start chatting! Click the hamburger menu (☰) to access sign-in options.";
+        } else {
+            this.messageInput.placeholder = "Ask me anything... I'm running right here in your browser! 🤖";
         }
     }
 

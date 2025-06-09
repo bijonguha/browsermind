@@ -14,9 +14,10 @@ class BrowserMindApp {
         
         this.setupEventListeners();
         this.initializeMarkdown();
-        this.restoreConversation();
+        this.startNewConversation(); // Always start fresh
         this.initializeModels();
         this.loadVersionInfo();
+        this.initializeAuth();
         
         // Ensure DOM is fully ready and UI elements are available
         this.waitForDOMReady().then(() => {
@@ -37,11 +38,15 @@ class BrowserMindApp {
     }
 
     setupEventListeners() {
-        // Chat functionality
-        this.ui.sendButton.addEventListener('click', () => this.sendMessage());
+        // Chat functionality with auth guard
+        this.ui.sendButton.addEventListener('click', () => {
+            if (this.requireAuth()) return;
+            this.sendMessage();
+        });
         this.ui.messageInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
+                if (this.requireAuth()) return;
                 this.sendMessage();
             }
         });
@@ -52,16 +57,36 @@ class BrowserMindApp {
             this.ui.messageInput.style.height = Math.min(this.ui.messageInput.scrollHeight, 120) + 'px';
         });
 
-        // Action buttons
-        this.ui.clearAllBtn.addEventListener('click', () => this.clearEverything());
-        this.ui.clearCacheBtn.addEventListener('click', () => this.clearCache());
-        this.ui.clearHistoryBtn.addEventListener('click', () => this.clearConversationHistory());
-        this.ui.exportMarkdownBtn.addEventListener('click', () => this.exportConversation('markdown'));
-        this.ui.exportJsonBtn.addEventListener('click', () => this.exportConversation('json'));
-        this.ui.newChatBtn.addEventListener('click', () => this.startNewChat());
+        // Action buttons with auth guards
+        this.ui.clearAllBtn.addEventListener('click', () => {
+            if (this.requireAuth()) return;
+            this.clearEverything();
+        });
+        this.ui.clearCacheBtn.addEventListener('click', () => {
+            if (this.requireAuth()) return;
+            this.clearCache();
+        });
+        this.ui.clearHistoryBtn.addEventListener('click', () => {
+            if (this.requireAuth()) return;
+            this.clearConversationHistory();
+        });
+        this.ui.exportMarkdownBtn.addEventListener('click', () => {
+            if (this.requireAuth()) return;
+            this.exportConversation('markdown');
+        });
+        this.ui.exportJsonBtn.addEventListener('click', () => {
+            if (this.requireAuth()) return;
+            this.exportConversation('json');
+        });
+        this.ui.newChatBtn.addEventListener('click', () => {
+            if (this.requireAuth()) return;
+            this.startNewChat();
+        });
         
-        // Chat history event delegation
+        // Chat history event delegation with auth guard
         this.ui.chatHistoryList.addEventListener('click', (e) => {
+            if (this.requireAuth()) return;
+            
             const chatItem = e.target.closest('.chat-history-item');
             const deleteBtn = e.target.closest('[data-action="delete"]');
             
@@ -73,8 +98,10 @@ class BrowserMindApp {
             }
         });
         
-        // Model switching event delegation
+        // Model switching event delegation with auth guard
         this.ui.modelList.addEventListener('click', (e) => {
+            if (this.requireAuth()) return;
+            
             const modelCard = e.target.closest('.model-card');
             if (modelCard && modelCard.dataset.modelId) {
                 const modelId = modelCard.dataset.modelId;
@@ -84,6 +111,43 @@ class BrowserMindApp {
                 }
             }
         });
+    }
+
+    // Check if user is authenticated, show prompt if not
+    requireAuth() {
+        if (window.authManager && window.authManager.isAuthenticated()) {
+            return false; // User is authenticated, allow action
+        }
+        
+        // User is not authenticated, show prompt
+        this.showAuthPrompt();
+        return true; // Block the action
+    }
+
+    // Show authentication prompt
+    showAuthPrompt() {
+        // Open right sidebar to show auth section
+        const rightSidebar = document.getElementById('rightSidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+        
+        if (rightSidebar) {
+            rightSidebar.classList.add('open');
+            if (sidebarOverlay) {
+                sidebarOverlay.classList.add('active');
+            }
+        }
+        
+        // Add a temporary highlight to auth section
+        const authSection = document.getElementById('authSection');
+        if (authSection) {
+            authSection.style.animation = 'authHighlight 2s ease-in-out';
+            setTimeout(() => {
+                authSection.style.animation = '';
+            }, 2000);
+        }
+        
+        // Show a toast message
+        this.ui.addMessage('🔐 Please sign in to use this feature. Click the Sign in button above to get started!', 'system', false);
     }
 
     async initializeEngine() {
@@ -184,6 +248,20 @@ class BrowserMindApp {
             this.ui.setInputEnabled(true);
             this.ui.showLoading(false);
         }
+    }
+
+    startNewConversation() {
+        // Always start with a fresh conversation
+        this.chatManager.startNewChat();
+        
+        // Clear UI completely
+        this.ui.clearMessages(false);
+        
+        // Update chat history display
+        this.updateChatHistoryDisplay();
+        
+        // Add welcome message
+        this.ui.addMessage('👋 Welcome to BrowserMind! Start a new conversation by typing your question below.', 'system', false);
     }
 
     startNewChat() {
@@ -537,6 +615,28 @@ class BrowserMindApp {
         }
     }
 
+    initializeAuth() {
+        // Initialize authentication system
+        if (window.authManager) {
+            // Initialize auth after a short delay to ensure all scripts are loaded
+            setTimeout(async () => {
+                try {
+                    await window.authManager.initialize();
+                    console.log('✅ Authentication system initialized');
+                    
+                    // Update input state based on initial auth status
+                    setTimeout(() => {
+                        this.ui.setInputEnabled(this.engine.engine !== null);
+                    }, 100);
+                } catch (error) {
+                    console.warn('Authentication initialization failed:', error);
+                }
+            }, 500);
+        } else {
+            console.warn('Auth manager not available');
+        }
+    }
+
     async loadVersionInfo() {
         try {
             const response = await fetch('./version.json');
@@ -557,5 +657,5 @@ class BrowserMindApp {
 
 // Initialize the app when the page loads
 document.addEventListener('DOMContentLoaded', () => {
-    new BrowserMindApp();
+    window.app = new BrowserMindApp();
 });
