@@ -1,0 +1,31 @@
+<svg viewBox="0 0 240 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Circle with Gradient -->
+  <defs>
+    <linearGradient id="gradient1" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#8B5CF6"/>
+      <stop offset="1" stop-color="#06B6D4"/>
+    </linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge> 
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Icon Background -->
+  <rect x="0" y="10" width="40" height="40" rx="12" fill="url(#gradient1)" filter="url(#glow)"/>
+  
+  <!-- Brain/Mind Icon -->
+  <path d="M12 30C12 26.6863 14.6863 24 18 24H22C25.3137 24 28 26.6863 28 30C28 33.3137 25.3137 36 22 36H18C14.6863 36 12 33.3137 12 30Z" fill="white" fill-opacity="0.9"/>
+  <circle cx="18" cy="30" r="2" fill="url(#gradient1)"/>
+  <circle cx="22" cy="30" r="2" fill="url(#gradient1)"/>
+  
+  <!-- Neural Network Lines -->
+  <path d="M15 27L18 30L15 33M25 27L22 30L25 33" stroke="url(#gradient1)" stroke-width="1" opacity="0.6"/>
+  
+  <!-- Text -->
+  <text x="55" y="25" font-family="Inter, sans-serif" font-size="18" font-weight="700" fill="#F8FAFC">BrowserMind</text>
+  <text x="55" y="42" font-family="Inter, sans-serif" font-size="11" font-weight="400" fill="#94A3B8">AI in your browser</text>
+</svg>

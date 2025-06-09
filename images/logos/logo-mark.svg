@@ -1,0 +1,29 @@
+<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="gradient1" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#8B5CF6"/>
+      <stop offset="1" stop-color="#06B6D4"/>
+    </linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge> 
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="40" height="40" rx="12" fill="url(#gradient1)" filter="url(#glow)"/>
+  
+  <!-- Brain/Mind Shape -->
+  <path d="M12 20C12 16.6863 14.6863 14 18 14H22C25.3137 14 28 16.6863 28 20C28 23.3137 25.3137 26 22 26H18C14.6863 26 12 23.3137 12 20Z" fill="white" fill-opacity="0.9"/>
+  
+  <!-- Neural Nodes -->
+  <circle cx="18" cy="20" r="2" fill="url(#gradient1)"/>
+  <circle cx="22" cy="20" r="2" fill="url(#gradient1)"/>
+  
+  <!-- Connection Lines -->
+  <path d="M15 17L18 20L15 23M25 17L22 20L25 23" stroke="url(#gradient1)" stroke-width="1.5" opacity="0.7"/>
+  <path d="M18 18L22 18M18 22L22 22" stroke="url(#gradient1)" stroke-width="1" opacity="0.5"/>
+</svg>
