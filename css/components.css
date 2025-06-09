@@ -244,6 +244,124 @@
     will-change: width;
 }
 
+/* Progress container transformations */
+.progress-container.completing {
+    animation: progressToStatus 1.2s ease-in-out forwards;
+}
+
+.progress-container.minimized {
+    transform: translateY(-100vh) scale(0.3);
+    opacity: 0;
+    pointer-events: none;
+    display: none !important;
+    position: absolute;
+    top: -9999px;
+}
+
+@keyframes progressToStatus {
+    0% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
+    30% {
+        transform: translateY(-10px) scale(0.98);
+        opacity: 0.9;
+    }
+    60% {
+        transform: translateY(-30px) scale(0.85);
+        opacity: 0.6;
+    }
+    100% {
+        transform: translateY(-200px) scale(0.1);
+        opacity: 0;
+    }
+}
+
+/* Compact AI Status Indicator */
+.ai-status-compact {
+    position: absolute;
+    top: -100px;
+    right: 120px;
+    background: linear-gradient(135deg, #10b981, #06b6d4);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.4s ease;
+    z-index: 1000;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.ai-status-compact.show {
+    opacity: 1;
+    transform: translateY(0);
+    top: 20px;
+}
+
+.ai-status-compact.hide {
+    opacity: 0;
+    transform: translateY(-20px);
+    pointer-events: none;
+}
+
+.ai-status-icon {
+    width: 16px;
+    height: 16px;
+    animation: statusPulse 2s ease-in-out infinite;
+}
+
+.ai-status-icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+@keyframes statusPulse {
+    0%, 100% { 
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% { 
+        transform: scale(1.1);
+        opacity: 0.8;
+    }
+}
+
+.ai-status-text {
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.ai-status-close {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.8);
+    cursor: pointer;
+    padding: 2px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    margin-left: 4px;
+}
+
+.ai-status-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+.ai-status-close svg {
+    width: 12px;
+    height: 12px;
+}
+
 /* Input container */
 .input-container {
     padding: 24px 32px;
