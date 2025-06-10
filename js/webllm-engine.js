@@ -88,12 +88,28 @@ Note: You process everything locally for privacy. If you need context from outsi
         try {
             statusCallback('Checking WebGPU support...', 'loading');
             
-            if (!navigator.gpu) {
+            // Enhanced WebGPU support check
+            if (window.BrowserUtils && window.BrowserUtils.checkWebGPUSupport) {
+                const webGPUResult = await window.BrowserUtils.checkWebGPUSupport();
+                if (!webGPUResult.supported) {
+                    const errorMessage = `WebGPU not functional: ${webGPUResult.reason}`;
+                    console.error(errorMessage);
+                    statusCallback(errorMessage, 'error');
+                    
+                    // Show compatibility error if not already shown
+                    if (!document.querySelector('.compatibility-modal')) {
+                        this.showCompatibilityError(webGPUResult);
+                    }
+                    
+                    throw new Error(errorMessage);
+                }
+                console.log('✅ WebGPU functional check passed:', webGPUResult);
+            } else if (!navigator.gpu) {
                 console.error('WebGPU not supported in this browser');
                 statusCallback('WebGPU not supported', 'error');
                 
                 // Show a more user-friendly error if the compatibility check didn't catch this
-                if (!window.browserCompatibility || !document.querySelector('.compatibility-modal')) {
+                if (!document.querySelector('.compatibility-modal')) {
                     this.showCompatibilityError();
                 }
                 
@@ -127,9 +143,8 @@ Note: You process everything locally for privacy. If you need context from outsi
             model.status = 'loading';
             statusCallback(`Switching to ${model.name}...`, 'loading');
 
-            if (this.engine) {
-                this.engine = null;
-            }
+            // Properly dispose of the current engine
+            await this.disposeEngine();
 
             this.currentModel = modelId;
             this.engine = await CreateMLCEngine(
@@ -158,6 +173,63 @@ Note: You process everything locally for privacy. If you need context from outsi
         }
     }
 
+    /**
+     * Properly dispose of the current engine to free memory
+     */
+    async disposeEngine() {
+        if (this.engine) {
+            try {
+                // Call dispose if available
+                if (typeof this.engine.dispose === 'function') {
+                    await this.engine.dispose();
+                }
+                
+                // Clear reference
+                this.engine = null;
+                
+                // Suggest garbage collection
+                if (window.gc) {
+                    window.gc();
+                }
+                
+                console.log('🧹 Engine disposed and memory cleaned');
+                
+            } catch (error) {
+                console.warn('⚠️ Engine disposal failed:', error);
+                this.engine = null;
+            }
+        }
+    }
+
+    /**
+     * Check device capabilities and optimize settings accordingly
+     */
+    getOptimizedSettings() {
+        const deviceMemory = navigator.deviceMemory || 4;
+        const connection = navigator.connection;
+        
+        // Base settings
+        let settings = {
+            max_tokens: 512,
+            temperature: 0.7,
+            top_p: 0.9
+        };
+        
+        // Optimize for low-memory devices
+        if (deviceMemory < 4) {
+            settings.max_tokens = 256;
+            console.log('📱 Optimized settings for low-memory device');
+        }
+        
+        // Optimize for slow connections
+        if (connection && (connection.effectiveType === '2g' || connection.effectiveType === '3g')) {
+            settings.max_tokens = Math.min(settings.max_tokens, 256);
+            console.log('🌐 Optimized settings for slow connection');
+        }
+        
+        return settings;
+    }
+
     async generateResponse(messages) {
         if (!this.engine || this.isLoading) {
             throw new Error('Engine not ready');
@@ -165,17 +237,54 @@ Note: You process everything locally for privacy. If you need context from outsi
 
         this.isLoading = true;
         try {
+            // Get optimized settings for current device
+            const settings = this.getOptimizedSettings();
+            
             const response = await this.engine.chat.completions.create({
                 messages: messages,
                 stream: false,
-                max_tokens: 512,
-                temperature: 0.7
+                max_tokens: settings.max_tokens,
+                temperature: settings.temperature,
+                top_p: settings.top_p
             });
 
             return response.choices[0].message.content;
         } finally {
             this.isLoading = false;
         }
+    }
+
+    /**
+     * Get memory usage information
+     */
+    getMemoryUsage() {
+        if ('memory' in performance) {
+            const memory = performance.memory;
+            return {
+                used: Math.round(memory.usedJSHeapSize / 1024 / 1024),
+                total: Math.round(memory.totalJSHeapSize / 1024 / 1024),
+                limit: Math.round(memory.jsHeapSizeLimit / 1024 / 1024),
+                percentage: Math.round((memory.usedJSHeapSize / memory.jsHeapSizeLimit) * 100)
+            };
+        }
+        return null;
+    }
+
+    /**
+     * Force garbage collection and cleanup
+     */
+    forceCleanup() {
+        // Clear any cached data
+        if (this.engine && typeof this.engine.clearCache === 'function') {
+            this.engine.clearCache();
+        }
+        
+        // Suggest garbage collection
+        if (window.gc) {
+            window.gc();
+        }
+        
+        console.log('🧹 Forced cleanup completed');
     }
 
     getCurrentModel() {
@@ -186,8 +295,15 @@ Note: You process everything locally for privacy. If you need context from outsi
      * Show a compatibility error message if WebGPU is not supported
      * This is a fallback in case the browser-compatibility.js check doesn't catch it
      */
-    showCompatibilityError() {
-        // Create a simple error message if the full compatibility modal isn't already shown
+    showCompatibilityError(webGPUResult = null) {
+        // Use the centralized compatibility modal if available
+        if (window.BrowserCompatibility) {
+            const compatibility = new window.BrowserCompatibility();
+            compatibility.showIncompatibilityModal(false, true, webGPUResult);
+            return;
+        }
+        
+        // Fallback to simple error message
         const errorDiv = document.createElement('div');
         errorDiv.style.cssText = `
             position: fixed;
@@ -206,9 +322,14 @@ Note: You process everything locally for privacy. If you need context from outsi
             border-bottom: 4px solid #dc2626;
         `;
         
+        let errorMessage = 'Your browser doesn\'t support WebGPU, which is required to run AI models in BrowserMind.';
+        if (webGPUResult) {
+            errorMessage += ` (${webGPUResult.reason})`;
+        }
+        
         errorDiv.innerHTML = `
             <strong>Browser Compatibility Error:</strong>
-            Your browser doesn't support WebGPU, which is required to run AI models in BrowserMind.
+            ${errorMessage}
             Please use a modern browser like Chrome 113+, Edge 113+, or Safari 17+.
         `;
         

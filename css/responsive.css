@@ -1,5 +1,52 @@
-/* Responsive design */
-@media (max-width: 768px) {
+/* Mobile-first responsive design with enhanced breakpoints */
+
+/* Base mobile styles (320px and up) */
+@media (max-width: 320px) {
+    .app-container {
+        min-width: 320px;
+    }
+    
+    .sidebar {
+        padding: 12px;
+    }
+    
+    .chat-header {
+        padding: 12px 16px;
+    }
+    
+    .messages {
+        padding: 16px 12px;
+    }
+    
+    .input-container {
+        padding: 12px 16px;
+    }
+    
+    .message {
+        max-width: 95%;
+    }
+    
+    .message-content {
+        font-size: 12px;
+    }
+    
+    .progress-container {
+        margin: 8px;
+        padding: 16px;
+    }
+    
+    .progress-details h3 {
+        font-size: 16px;
+    }
+    
+    .hamburger-btn {
+        width: 36px;
+        height: 36px;
+    }
+}
+
+/* Standard mobile phones (480px and down) */
+@media (max-width: 480px) {
     .app-container {
         flex-direction: column;
     }
@@ -11,9 +58,33 @@
         flex-direction: row;
         align-items: center;
         justify-content: space-between;
+        border-right: none;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.1);
     }
     
     .sidebar-footer {
+        display: none;
+    }
+    
+    .logo {
+        flex: 1;
+    }
+    
+    .logo-text h1 {
+        font-size: 18px;
+    }
+    
+    .logo-text p {
+        font-size: 11px;
+    }
+    
+    .new-chat-btn {
+        padding: 12px 16px;
+        font-size: 13px;
+        min-width: auto;
+    }
+    
+    .status-section {
         display: none;
     }
     
@@ -23,12 +94,17 @@
         align-items: center;
     }
     
+    .chat-header h2 {
+        font-size: 20px;
+    }
+    
     .messages {
-        padding: 20px;
+        padding: 20px 16px;
     }
     
     .input-container {
         padding: 16px 20px;
+        gap: 12px;
     }
     
     .message {
@@ -44,8 +120,8 @@
     }
     
     .progress-container {
-        margin: 16px;
-        padding: 20px;
+        margin: 16px 8px;
+        padding: 20px 16px;
     }
     
     .progress-header {
@@ -80,20 +156,17 @@
         right: -100%;
     }
     
-    .right-sidebar-tabs {
-        overflow-x: auto;
-    }
-    
-    .tab-btn {
-        min-width: 80px;
+    .ai-status-compact {
+        right: 16px;
+        padding: 6px 12px;
         font-size: 11px;
     }
-}
-
-@media (max-width: 480px) {
+    
     .welcome-message {
         flex-direction: column;
         text-align: center;
+        margin: 0;
+        padding: 20px 16px;
     }
     
     .welcome-features {
@@ -109,75 +182,297 @@
         display: none;
     }
     
+    #sendButton {
+        min-width: 52px;
+        padding: 16px;
+    }
+}
+
+/* Large mobile phones and small tablets (640px and down) */
+@media (max-width: 640px) {
+    .right-sidebar {
+        width: 90%;
+        right: -90%;
+    }
+    
     .section-header {
-        padding: 16px 20px;
+        padding: 18px 24px;
     }
     
     .subsection {
-        padding: 12px 20px 0;
+        padding: 14px 24px 0;
     }
     
     .model-card {
-        padding: 12px;
-    }
-    
-    .model-name {
-        font-size: 13px;
+        padding: 14px;
     }
     
     .chat-history-item {
-        padding: 10px;
-    }
-    
-    .progress-container {
-        margin: 12px;
-        padding: 16px;
-    }
-    
-    .progress-details h3 {
-        font-size: 16px;
-    }
-    
-    .progress-main-text {
-        font-size: 14px;
-    }
-    
-    .progress-sub-text {
-        font-size: 12px;
-    }
-    
-    .progress-stats {
         padding: 12px;
     }
     
-    .progress-stat-label {
-        font-size: 10px;
+    .progress-main-text {
+        font-size: 15px;
     }
     
-    .progress-stat-value {
+    .progress-sub-text {
         font-size: 13px;
     }
-    
-    .progress-tip {
-        padding: 10px 12px;
+}
+
+/* Tablets (768px and down) */
+@media (max-width: 768px) {
+    .app-container {
+        flex-direction: column;
     }
     
-    .progress-tip-text {
-        font-size: 12px;
+    .sidebar {
+        width: 100%;
+        height: auto;
+        padding: 20px;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        border-right: none;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.1);
     }
     
-    .ai-status-compact {
-        right: 16px;
-        padding: 6px 12px;
-        font-size: 11px;
+    .sidebar-footer {
+        display: none;
+    }
+    
+    .chat-header {
+        padding: 20px 24px;
+        flex-direction: row;
+        align-items: center;
+    }
+    
+    .messages {
+        padding: 24px;
+    }
+    
+    .input-container {
+        padding: 20px 24px;
+    }
+    
+    .message {
+        max-width: 85%;
+    }
+    
+    .progress-container {
+        margin: 20px;
+        padding: 24px;
+    }
+    
+    .progress-header {
+        flex-direction: row;
+        gap: 16px;
+        text-align: left;
+    }
+    
+    .progress-icon {
+        width: 44px;
+        height: 44px;
+    }
+    
+    .progress-details h3 {
+        font-size: 19px;
+    }
+    
+    .progress-stats {
+        flex-direction: row;
+        gap: 16px;
+        padding: 16px;
+        justify-content: space-around;
+    }
+    
+    .progress-stat {
+        flex-direction: column;
+        justify-content: center;
+        width: auto;
+    }
+    
+    .right-sidebar {
+        width: 80%;
+        right: -80%;
+    }
+}
+
+/* Large tablets and small desktops (1024px and down) */
+@media (max-width: 1024px) {
+    .right-sidebar {
+        width: 400px;
+        right: -400px;
+    }
+    
+    .sidebar {
+        width: 280px;
+    }
+    
+    .messages {
+        padding: 28px;
+    }
+    
+    .message {
+        max-width: 75%;
+    }
+    
+    .progress-container {
+        margin: 24px;
+        padding: 28px;
+    }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+    /* Ensure minimum tap target sizes */
+    .hamburger-btn {
+        min-width: 44px;
+        min-height: 44px;
+        padding: 10px;
+    }
+    
+    .copy-btn {
+        min-width: 44px;
+        min-height: 44px;
+        padding: 14px;
+    }
+    
+    .chat-history-action-btn {
+        min-width: 36px;
+        min-height: 36px;
+        padding: 8px;
+    }
+    
+    .new-chat-btn {
+        min-height: 48px;
+        padding: 16px 20px;
+    }
+    
+    #sendButton {
+        min-height: 52px;
+        min-width: 52px;
+    }
+    
+    .action-btn {
+        min-height: 48px;
+        padding: 16px 20px;
+    }
+    
+    .close-btn {
+        min-width: 44px;
+        min-height: 44px;
+        padding: 12px;
+    }
+    
+    .auth-sign-in-btn {
+        min-height: 52px;
+        padding: 18px 24px;
+    }
+    
+    .auth-sign-out-btn {
+        min-width: 44px;
+        min-height: 44px;
+    }
+    
+    /* Increase spacing for touch */
+    .chat-history-list {
+        gap: 12px;
+    }
+    
+    .export-options {
+        gap: 12px;
+    }
+    
+    .section-header {
+        min-height: 52px;
+    }
+    
+    /* Enhanced focus states for touch */
+    .hamburger-btn:focus,
+    .copy-btn:focus,
+    .action-btn:focus {
+        outline: 2px solid #8b5cf6;
+        outline-offset: 2px;
+    }
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+    
+    .progress-icon.loading,
+    .progress-icon.completing {
+        animation: none;
     }
     
     .ai-status-icon {
-        width: 14px;
-        height: 14px;
+        animation: none;
     }
     
-    .ai-status-text {
-        font-size: 11px;
+    .thinking-animation .dot {
+        animation: none;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .message {
+        border: 2px solid currentColor;
+    }
+    
+    .progress-container {
+        border: 2px solid currentColor;
+    }
+    
+    .right-sidebar {
+        border-left: 3px solid currentColor;
+    }
+}
+
+/* Dark mode preferences (future-proofing) */
+@media (prefers-color-scheme: light) {
+    /* Future light mode overrides */
+}
+
+/* Landscape orientation optimizations */
+@media (max-width: 768px) and (orientation: landscape) {
+    .sidebar {
+        padding: 12px 20px;
+    }
+    
+    .chat-header {
+        padding: 12px 24px;
+    }
+    
+    .progress-container {
+        margin: 12px 20px;
+        padding: 16px 20px;
+    }
+    
+    .progress-header {
+        flex-direction: row;
+        gap: 12px;
+        text-align: left;
+    }
+    
+    .progress-icon {
+        width: 36px;
+        height: 36px;
+    }
+    
+    .input-container {
+        padding: 12px 24px;
+    }
+    
+    .messages {
+        padding: 16px 24px;
     }
 }

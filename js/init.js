@@ -27,23 +27,15 @@ class BrowserMindInit {
             return true;
         }
         
-        // Perform our own compatibility check
-        const hasWebGPU = !!window.navigator.gpu;
+        // Perform our own compatibility check using centralized detection
+        const hasWebGPU = window.BrowserUtils ? 
+            window.BrowserUtils.hasWebGPUAPI() : 
+            'gpu' in navigator && !!navigator.gpu;
         
-        // Check ES6+ features
-        let hasES6 = true;
-        try {
-            // Test arrow functions
-            eval("() => {}");
-            
-            // Test promises
-            if (typeof Promise === 'undefined') hasES6 = false;
-            
-            // Test template literals
-            eval("`test`");
-        } catch (e) {
-            hasES6 = false;
-        }
+        // Check ES6+ features using centralized detection
+        const hasES6 = window.BrowserUtils ? 
+            window.BrowserUtils.checkES6Support() : 
+            this.fallbackES6Check();
         
         // If incompatible, show error
         if (!hasWebGPU || !hasES6) {
@@ -57,6 +49,20 @@ class BrowserMindInit {
         }
         
         return true;
+    }
+
+    /**
+     * Fallback ES6 check if BrowserUtils not available
+     */
+    fallbackES6Check() {
+        try {
+            eval("() => {}");
+            if (typeof Promise === 'undefined') return false;
+            eval("`test`");
+            return true;
+        } catch (e) {
+            return false;
+        }
     }
 
     async initialize() {

@@ -2,21 +2,123 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>BrowserMind - AI That Lives in Your Browser</title>
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
     
     <!-- Favicons -->
     <link rel="icon" type="image/svg+xml" href="images/icons/favicon.svg">
     <link rel="apple-touch-icon" href="images/icons/app-icon-192.svg">
     
-    <!-- CSS Modules -->
-    <link rel="stylesheet" href="css/base.css">
-    <link rel="stylesheet" href="css/sidebar.css">
-    <link rel="stylesheet" href="css/right-sidebar.css">
-    <link rel="stylesheet" href="css/chat.css">
-    <link rel="stylesheet" href="css/components.css">
-    <link rel="stylesheet" href="css/models.css">
-    <link rel="stylesheet" href="css/content.css">
+    <!-- PWA Meta Tags -->
+    <meta name="apple-mobile-web-app-title" content="BrowserMind">
+    <meta name="application-name" content="BrowserMind">
+    <meta name="msapplication-TileColor" content="#8b5cf6">
+    <meta name="msapplication-config" content="browserconfig.xml">
+    <meta name="theme-color" content="#8b5cf6" media="(prefers-color-scheme: dark)">
+    <meta name="theme-color" content="#06b6d4" media="(prefers-color-scheme: light)">
+    
+    <!-- Critical CSS (inline for faster loading) -->
+    <style>
+        /* Critical above-the-fold styles */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            min-height: 100vh;
+            color: #e2e8f0;
+            line-height: 1.6;
+            overflow: hidden;
+        }
+        .app-container {
+            display: flex;
+            height: 100vh;
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(20px);
+            min-width: 0;
+        }
+        .sidebar {
+            width: 300px;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(148, 163, 184, 0.1);
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+            gap: 24px;
+        }
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: rgba(248, 250, 252, 0.02);
+            min-width: 0;
+            width: 100%;
+        }
+        .hamburger-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            width: 32px;
+            height: 32px;
+            align-items: center;
+            justify-content: center;
+        }
+        .hamburger-line {
+            width: 18px;
+            height: 2px;
+            background: #cbd5e1;
+            border-radius: 1px;
+            transition: all 0.3s ease;
+        }
+        @media (max-width: 768px) {
+            .app-container { flex-direction: column; }
+            .sidebar {
+                width: 100%;
+                height: auto;
+                padding: 20px;
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+                border-right: none;
+                border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+            }
+        }
+    </style>
+    
+    <!-- CSS Modules - Load asynchronously -->
+    <link rel="preload" href="css/base.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="css/base.css"></noscript>
+    
+    <link rel="preload" href="css/sidebar.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="css/sidebar.css"></noscript>
+    
+    <link rel="preload" href="css/right-sidebar.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="css/right-sidebar.css"></noscript>
+    
+    <link rel="preload" href="css/chat.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="css/chat.css"></noscript>
+    
+    <link rel="preload" href="css/components.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="css/components.css"></noscript>
+    
+    <link rel="preload" href="css/models.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="css/models.css"></noscript>
+    
+    <link rel="preload" href="css/content.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="css/content.css"></noscript>
+    
     <link rel="stylesheet" href="css/responsive.css">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -502,6 +604,31 @@
         <!-- Overlay for mobile -->
         <div class="sidebar-overlay" id="sidebarOverlay"></div>
     </div>
+
+    <!-- Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', async () => {
+                try {
+                    const registration = await navigator.serviceWorker.register('/sw.js');
+                    console.log('✅ Service Worker registered:', registration.scope);
+                    
+                    // Listen for service worker updates
+                    registration.addEventListener('updatefound', () => {
+                        const newWorker = registration.installing;
+                        newWorker.addEventListener('statechange', () => {
+                            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                console.log('🔄 New Service Worker available. Refresh to update.');
+                            }
+                        });
+                    });
+                    
+                } catch (error) {
+                    console.warn('⚠️ Service Worker registration failed:', error);
+                }
+            });
+        }
+    </script>
 
     <script type="module" src="js/app.js"></script>
 </body>

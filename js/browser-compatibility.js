@@ -7,53 +7,93 @@
 class BrowserCompatibility {
     constructor() {
         // Run compatibility check immediately
-        this.checkCompatibility();
+        this.initializeCompatibilityCheck();
+    }
+    
+    /**
+     * Initialize compatibility check asynchronously
+     */
+    async initializeCompatibilityCheck() {
+        try {
+            await this.checkCompatibility();
+        } catch (error) {
+            console.error('Compatibility check failed:', error);
+            // Fall back to basic check
+            this.basicCompatibilityCheck();
+        }
+    }
+    
+    /**
+     * Basic synchronous compatibility check fallback
+     */
+    basicCompatibilityCheck() {
+        const hasWebGPU = 'gpu' in navigator && !!navigator.gpu;
+        const hasES6 = window.BrowserUtils ? 
+            window.BrowserUtils.checkES6Support() : 
+            this.fallbackES6Check();
+        
+        if (!hasWebGPU || !hasES6) {
+            this.showIncompatibilityModal(hasWebGPU, hasES6, null);
+        }
     }
     
     /**
      * Check browser compatibility for critical features
      * @returns {boolean} True if browser is compatible, false otherwise
      */
-    checkCompatibility() {
-        // Check WebGPU support - critical for WebLLM engine
-        const hasWebGPU = !!window.navigator.gpu;
-        
-        // Check ES6+ features
+    async checkCompatibility() {
+        // Check ES6+ features first (synchronous)
         const hasES6 = this.checkES6Support();
         
-        // If incompatible, show modal and prevent further loading
-        if (!hasWebGPU || !hasES6) {
-            this.showIncompatibilityModal(hasWebGPU, hasES6);
+        // Basic WebGPU API check (synchronous)
+        const hasWebGPUAPI = window.BrowserUtils ? 
+            window.BrowserUtils.hasWebGPUAPI() : 
+            'gpu' in navigator && !!navigator.gpu;
+        
+        // If basic checks fail, show modal immediately
+        if (!hasWebGPUAPI || !hasES6) {
+            this.showIncompatibilityModal(hasWebGPUAPI, hasES6, null);
             return false;
+        }
+        
+        // Enhanced WebGPU functional check (asynchronous)
+        let webGPUResult = null;
+        if (window.BrowserUtils && window.BrowserUtils.checkWebGPUSupport) {
+            try {
+                webGPUResult = await window.BrowserUtils.checkWebGPUSupport();
+                if (!webGPUResult.supported) {
+                    this.showIncompatibilityModal(false, hasES6, webGPUResult);
+                    return false;
+                }
+            } catch (error) {
+                console.warn('Enhanced WebGPU check failed:', error);
+                // Fall back to basic check result
+            }
         }
         
         return true;
     }
     
     /**
-     * Check for essential ES6+ features
+     * Check for essential ES6+ features using centralized detection
      * @returns {boolean} True if ES6+ is supported, false otherwise
      */
     checkES6Support() {
+        return window.BrowserUtils ? 
+            window.BrowserUtils.checkES6Support() : 
+            this.fallbackES6Check();
+    }
+
+    /**
+     * Fallback ES6 check if BrowserUtils not available
+     */
+    fallbackES6Check() {
         try {
-            // Test arrow functions
             eval("() => {}");
-            
-            // Test promises
             if (typeof Promise === 'undefined') return false;
-            
-            // Test template literals
             eval("`test`");
-            
-            // Test destructuring
-            eval("const {a} = {a: 1}");
-            
-            // Test async/await
-            eval("async function test() { await Promise.resolve(); }");
-            
             return true;
         } catch (e) {
-            console.error("ES6+ compatibility check failed:", e);
             return false;
         }
     }
@@ -62,8 +102,9 @@ class BrowserCompatibility {
      * Show incompatibility modal with helpful information
      * @param {boolean} hasWebGPU Whether WebGPU is supported
      * @param {boolean} hasES6 Whether ES6+ features are supported
+     * @param {Object} webGPUResult Detailed WebGPU test results
      */
-    showIncompatibilityModal(hasWebGPU, hasES6) {
+    showIncompatibilityModal(hasWebGPU, hasES6, webGPUResult) {
         // Create modal container
         const modal = document.createElement('div');
         modal.className = 'compatibility-modal';
@@ -100,8 +141,26 @@ class BrowserCompatibility {
             message.innerHTML = 'Your browser doesn\'t support the required features to run BrowserMind. ' +
                 'This application requires <strong>WebGPU</strong> and modern JavaScript features.';
         } else if (!hasWebGPU) {
-            message.innerHTML = 'Your browser doesn\'t support <strong>WebGPU</strong>, which is required ' +
-                'to run the AI models in BrowserMind.';
+            let webGPUMessage = 'Your browser doesn\'t support <strong>WebGPU</strong>, which is required to run the AI models in BrowserMind.';
+            
+            if (webGPUResult) {
+                switch (webGPUResult.stage) {
+                    case 'api_missing':
+                        webGPUMessage += '<br><small>⚠️ WebGPU API not available in this browser.</small>';
+                        break;
+                    case 'no_adapter':
+                        webGPUMessage += '<br><small>⚠️ WebGPU API found but no graphics adapter available.</small>';
+                        break;
+                    case 'adapter_failed':
+                        webGPUMessage += '<br><small>⚠️ Failed to request WebGPU adapter: ' + webGPUResult.reason + '</small>';
+                        break;
+                    case 'device_failed':
+                        webGPUMessage += '<br><small>⚠️ WebGPU adapter found but device creation failed: ' + webGPUResult.reason + '</small>';
+                        break;
+                }
+            }
+            
+            message.innerHTML = webGPUMessage;
         } else {
             message.innerHTML = 'Your browser doesn\'t support some modern JavaScript features required ' +
                 'to run BrowserMind properly.';
@@ -124,12 +183,34 @@ class BrowserCompatibility {
         
         const browserList = document.createElement('ul');
         
-        const browsers = [
-            { name: 'Google Chrome', version: '113+', url: 'https://www.google.com/chrome/' },
-            { name: 'Microsoft Edge', version: '113+', url: 'https://www.microsoft.com/edge' },
-            { name: 'Safari', version: '17+', url: 'https://www.apple.com/safari/' },
-            { name: 'Firefox', version: '113+', url: 'https://www.mozilla.org/firefox/' }
-        ];
+        // Get dynamic browser requirements if available
+        let browsers;
+        if (window.BrowserUtils && window.BrowserUtils.getBrowserInfo) {
+            const currentBrowser = window.BrowserUtils.getBrowserInfo();
+            const meetsRequirements = window.BrowserUtils.meetsMinimumRequirements();
+            
+            browsers = [
+                { name: 'Google Chrome', version: '113+', url: 'https://www.google.com/chrome/', current: currentBrowser.browser === 'Chrome' },
+                { name: 'Microsoft Edge', version: '113+', url: 'https://www.microsoft.com/edge', current: currentBrowser.browser === 'Edge' },
+                { name: 'Safari', version: '17+', url: 'https://www.apple.com/safari/', current: currentBrowser.browser === 'Safari' },
+                { name: 'Firefox', version: '113+', url: 'https://www.mozilla.org/firefox/', current: currentBrowser.browser === 'Firefox' }
+            ];
+            
+            // Add current browser info
+            if (currentBrowser.browser !== 'Unknown') {
+                const currentBrowserInfo = document.createElement('p');
+                currentBrowserInfo.innerHTML = `<strong>Current browser:</strong> ${currentBrowser.browser} ${currentBrowser.version} ${meetsRequirements ? '✅' : '❌'}`;
+                currentBrowserInfo.style.marginTop = '10px';
+                body.appendChild(currentBrowserInfo);
+            }
+        } else {
+            browsers = [
+                { name: 'Google Chrome', version: '113+', url: 'https://www.google.com/chrome/' },
+                { name: 'Microsoft Edge', version: '113+', url: 'https://www.microsoft.com/edge' },
+                { name: 'Safari', version: '17+', url: 'https://www.apple.com/safari/' },
+                { name: 'Firefox', version: '113+', url: 'https://www.mozilla.org/firefox/' }
+            ];
+        }
         
         browsers.forEach(browser => {
             const item = document.createElement('li');
@@ -137,6 +218,10 @@ class BrowserCompatibility {
             link.href = browser.url;
             link.target = '_blank';
             link.textContent = `${browser.name} (${browser.version})`;
+            if (browser.current) {
+                link.style.fontWeight = 'bold';
+                item.style.backgroundColor = 'rgba(255, 255, 0, 0.1)';
+            }
             item.appendChild(link);
             browserList.appendChild(item);
         });

@@ -1,28 +1,397 @@
-import { WebLLMEngine } from './webllm-engine.js';
-import { ChatManager } from './chat-manager.js';
-import { UIComponents } from './ui-components.js';
-import { SidebarManager } from './sidebar-manager.js';
+import { lazyLoader } from './lazy-loader.js';
+import { performanceMonitor } from './performance-monitor.js';
 
 class BrowserMindApp {
     constructor() {
         console.log('🚀 BrowserMind initializing...');
+        console.log('📊 Loading strategy:', lazyLoader.getStrategyInfo());
         
-        this.engine = new WebLLMEngine();
-        this.chatManager = new ChatManager();
-        this.ui = new UIComponents();
-        this.sidebar = new SidebarManager(this.ui);
+        // Initialize core components first
+        this.engine = null;
+        this.chatManager = null;
+        this.ui = null;
+        this.sidebar = null;
+        
+        // PWA features
+        this.pwaInstallPrompt = null;
+        
+        // Start progressive initialization
+        this.progressiveInitialization();
+        
+        // Initialize PWA features
+        this.initializePWAFeatures();
+    }
+
+    /**
+     * Progressive initialization based on device capabilities
+     */
+    async progressiveInitialization() {
+        try {
+            // Phase 1: Load critical components
+            await this.loadCriticalComponents();
+            
+            // Phase 2: Initialize core functionality
+            await this.initializeCoreFeatures();
+            
+            // Phase 3: Load non-critical features on idle
+            this.loadNonCriticalFeatures();
+            
+        } catch (error) {
+            console.error('❌ Progressive initialization failed:', error);
+            // Fallback to basic initialization
+            await this.fallbackInitialization();
+        }
+    }
+
+    /**
+     * Load critical components first
+     */
+    async loadCriticalComponents() {
+        console.log('🔄 Loading critical components...');
+        
+        try {
+            // Load core modules
+            const [
+                { UIComponents },
+                { SidebarManager },
+                { ChatManager }
+            ] = await Promise.all([
+                lazyLoader.loadModule('./ui-components.js'),
+                lazyLoader.loadModule('./sidebar-manager.js'),
+                lazyLoader.loadModule('./chat-manager.js')
+            ]);
+
+            this.ui = new UIComponents();
+            this.sidebar = new SidebarManager(this.ui);
+            this.chatManager = new ChatManager();
+            
+            console.log('✅ Critical components loaded');
+        } catch (error) {
+            console.error('❌ Failed to load critical components:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Initialize core features
+     */
+    async initializeCoreFeatures() {
+        console.log('🔄 Initializing core features...');
         
         this.setupEventListeners();
-        this.initializeMarkdown();
-        this.startNewConversation(); // Always start fresh
-        this.initializeModels();
+        this.startNewConversation();
         this.loadVersionInfo();
-        this.initializeAuth();
         
-        // Ensure DOM is fully ready and UI elements are available
-        this.waitForDOMReady().then(() => {
-            this.initializeEngine();
+        // Setup performance monitoring
+        this.setupPerformanceMonitoring();
+        
+        // Wait for DOM to be ready
+        await this.waitForDOMReady();
+        
+        // Initialize engine loading (but don't wait for it)
+        this.initializeEngineAsync();
+        
+        console.log('✅ Core features initialized');
+    }
+
+    /**
+     * Setup performance monitoring and optimizations
+     */
+    setupPerformanceMonitoring() {
+        // Listen for performance warnings
+        window.addEventListener('performance-warning', (event) => {
+            const { type, data } = event.detail;
+            console.warn(`⚠️ Performance warning: ${type}`, data);
+            
+            // Handle specific performance issues
+            this.handlePerformanceWarning(type, data);
         });
+        
+        // Optimize for mobile if detected
+        performanceMonitor.optimizeForMobile();
+        
+        // Log initial performance metrics
+        setTimeout(() => {
+            const metrics = performanceMonitor.getMetrics();
+            console.log('📊 Performance metrics:', metrics);
+        }, 5000);
+    }
+
+    /**
+     * Handle performance warnings
+     */
+    handlePerformanceWarning(type, data) {
+        switch (type) {
+            case 'low-fps':
+                this.handleLowFPS(data.fps);
+                break;
+                
+            case 'high-memory':
+                this.handleHighMemoryUsage(data.ratio);
+                break;
+                
+            case 'long-task':
+                this.handleLongTask(data.duration);
+                break;
+                
+            case 'layout-shift':
+                this.handleLayoutShift(data.score);
+                break;
+        }
+    }
+
+    /**
+     * Handle low FPS scenarios
+     */
+    handleLowFPS(fps) {
+        if (this.ui && this.ui.addMessage) {
+            this.ui.addMessage(
+                `📊 Performance: Optimizing for better performance (FPS: ${fps.toFixed(1)})`,
+                'system',
+                false
+            );
+        }
+        
+        // Reduce chat animation frequency
+        this.optimizeChatAnimations();
+    }
+
+    /**
+     * Handle high memory usage
+     */
+    handleHighMemoryUsage(ratio) {
+        console.warn(`🧠 High memory usage detected: ${(ratio * 100).toFixed(1)}%`);
+        
+        // Clear old messages to free memory
+        if (this.chatManager && this.chatManager.conversationHistory.length > 20) {
+            this.chatManager.conversationHistory = this.chatManager.conversationHistory.slice(-10);
+            this.chatManager.saveConversationHistory();
+        }
+        
+        // Trigger garbage collection if possible
+        if (window.gc) {
+            window.gc();
+        }
+    }
+
+    /**
+     * Handle long tasks
+     */
+    handleLongTask(duration) {
+        console.warn(`⏱️ Long task detected: ${duration}ms`);
+        
+        // Break up future operations if possible
+        this.enableTaskScheduling = true;
+    }
+
+    /**
+     * Handle layout shifts
+     */
+    handleLayoutShift(score) {
+        console.warn(`📐 Layout shift detected: ${score}`);
+        
+        // Add CSS to prevent future shifts
+        this.preventLayoutShifts();
+    }
+
+    /**
+     * Optimize chat animations for performance
+     */
+    optimizeChatAnimations() {
+        const style = document.createElement('style');
+        style.id = 'chat-performance-optimizations';
+        style.textContent = `
+            .message {
+                animation: none !important;
+            }
+            
+            .loading-indicator .thinking-animation .dot {
+                animation-duration: 2s !important;
+            }
+            
+            .copy-btn {
+                transition: none !important;
+            }
+        `;
+        
+        if (!document.getElementById('chat-performance-optimizations')) {
+            document.head.appendChild(style);
+        }
+    }
+
+    /**
+     * Prevent layout shifts
+     */
+    preventLayoutShifts() {
+        const style = document.createElement('style');
+        style.id = 'layout-shift-prevention';
+        style.textContent = `
+            .progress-container {
+                min-height: 200px;
+            }
+            
+            .message {
+                contain: layout style paint;
+            }
+            
+            .chat-header {
+                min-height: 80px;
+            }
+        `;
+        
+        if (!document.getElementById('layout-shift-prevention')) {
+            document.head.appendChild(style);
+        }
+    }
+
+    /**
+     * Load non-critical features on idle
+     */
+    loadNonCriticalFeatures() {
+        console.log('🔄 Scheduling non-critical features...');
+        
+        // Load on idle or after delay
+        if ('requestIdleCallback' in window) {
+            requestIdleCallback(() => {
+                this.initializeNonCriticalFeatures();
+            }, { timeout: 3000 });
+        } else {
+            setTimeout(() => {
+                this.initializeNonCriticalFeatures();
+            }, 2000);
+        }
+    }
+
+    /**
+     * Initialize non-critical features
+     */
+    async initializeNonCriticalFeatures() {
+        console.log('🔄 Loading non-critical features...');
+        
+        try {
+            // Load auth and markdown asynchronously
+            await Promise.allSettled([
+                this.initializeAuth(),
+                this.initializeMarkdown()
+            ]);
+            
+            // Load external resources
+            lazyLoader.loadNonCriticalResources();
+            
+            console.log('✅ Non-critical features loaded');
+        } catch (error) {
+            console.warn('⚠️ Some non-critical features failed to load:', error);
+        }
+    }
+
+    /**
+     * Fallback initialization for failed progressive loading
+     */
+    async fallbackInitialization() {
+        console.log('🔄 Fallback initialization...');
+        
+        try {
+            // Direct imports as fallback
+            const { WebLLMEngine } = await import('./webllm-engine.js');
+            const { ChatManager } = await import('./chat-manager.js');
+            const { UIComponents } = await import('./ui-components.js');
+            const { SidebarManager } = await import('./sidebar-manager.js');
+
+            this.engine = new WebLLMEngine();
+            this.chatManager = new ChatManager();
+            this.ui = new UIComponents();
+            this.sidebar = new SidebarManager(this.ui);
+
+            this.setupEventListeners();
+            this.startNewConversation();
+            this.loadVersionInfo();
+            
+            await this.waitForDOMReady();
+            this.initializeEngine();
+            
+            console.log('✅ Fallback initialization completed');
+        } catch (error) {
+            console.error('❌ Fallback initialization failed:', error);
+            this.showCriticalError(error);
+        }
+    }
+
+    /**
+     * Initialize engine asynchronously
+     */
+    async initializeEngineAsync() {
+        try {
+            if (!this.engine) {
+                const { WebLLMEngine } = await lazyLoader.loadModule('./webllm-engine.js');
+                this.engine = new WebLLMEngine();
+            }
+            
+            this.initializeModels();
+            await this.initializeEngine();
+        } catch (error) {
+            console.error('❌ Engine initialization failed:', error);
+            this.showEngineError(error);
+        }
+    }
+
+    /**
+     * Show critical error to user
+     */
+    showCriticalError(error) {
+        const errorDiv = document.createElement('div');
+        errorDiv.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #1a1a2e;
+            color: #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            font-family: 'Inter', sans-serif;
+            z-index: 10000;
+        `;
+        
+        errorDiv.innerHTML = `
+            <h1 style="margin-bottom: 20px; color: #ef4444;">BrowserMind Loading Error</h1>
+            <p style="margin-bottom: 20px; text-align: center; max-width: 500px;">
+                We encountered an error while loading the application. Please try refreshing the page.
+            </p>
+            <button onclick="window.location.reload()" style="
+                background: linear-gradient(135deg, #8b5cf6, #06b6d4);
+                color: white;
+                border: none;
+                padding: 12px 24px;
+                border-radius: 8px;
+                cursor: pointer;
+                font-size: 16px;
+            ">Refresh Page</button>
+            <details style="margin-top: 20px; max-width: 600px;">
+                <summary style="cursor: pointer; margin-bottom: 10px;">Error Details</summary>
+                <pre style="background: rgba(0,0,0,0.3); padding: 10px; border-radius: 4px; font-size: 12px; overflow: auto;">
+${error.message}
+${error.stack}
+                </pre>
+            </details>
+        `;
+        
+        document.body.appendChild(errorDiv);
+    }
+
+    /**
+     * Show engine-specific error
+     */
+    showEngineError(error) {
+        if (this.ui && this.ui.addMessage) {
+            this.ui.addMessage(
+                `❌ Failed to initialize AI engine: ${error.message}. Please refresh the page to try again.`,
+                'system',
+                false
+            );
+        }
     }
 
     async waitForDOMReady() {
@@ -722,26 +1091,405 @@ class BrowserMindApp {
             return true;
         }
         
-        // Check WebGPU support
-        const hasWebGPU = !!window.navigator.gpu;
+        // Use centralized WebGPU detection
+        const hasWebGPU = window.BrowserUtils ? 
+            window.BrowserUtils.hasWebGPUAPI() : 
+            'gpu' in navigator && !!navigator.gpu;
+        
         if (!hasWebGPU) {
             return false;
         }
         
-        // Check ES6+ features
+        // Check ES6+ features using centralized detection
+        return window.BrowserUtils ? 
+            window.BrowserUtils.checkES6Support() : 
+            this.fallbackES6Check();
+    }
+
+    /**
+     * Fallback ES6 check if BrowserUtils not available
+     */
+    fallbackES6Check() {
         try {
-            // Test arrow functions
             eval("() => {}");
-            
-            // Test promises
             if (typeof Promise === 'undefined') return false;
-            
-            // Test template literals
             eval("`test`");
-            
             return true;
         } catch (e) {
             return false;
+        }
+    }
+
+    /**
+     * Initialize PWA features
+     */
+    initializePWAFeatures() {
+        console.log('📱 Initializing PWA features...');
+        
+        // Handle PWA install prompt
+        this.handleInstallPrompt();
+        
+        // Handle share target
+        this.handleShareTarget();
+        
+        // Handle file handlers
+        this.handleFileHandlers();
+        
+        // Handle protocol handlers
+        this.handleProtocolHandlers();
+        
+        // Add PWA utilities to UI
+        this.addPWAUtilities();
+        
+        console.log('✅ PWA features initialized');
+    }
+
+    /**
+     * Handle PWA install prompt
+     */
+    handleInstallPrompt() {
+        // Listen for beforeinstallprompt event
+        window.addEventListener('beforeinstallprompt', (e) => {
+            console.log('📱 PWA install prompt available');
+            
+            // Prevent the mini-infobar from appearing on mobile
+            e.preventDefault();
+            
+            // Store the event for later use
+            this.pwaInstallPrompt = e;
+            
+            // Show custom install button
+            this.showInstallButton();
+        });
+
+        // Listen for app installed event
+        window.addEventListener('appinstalled', (e) => {
+            console.log('✅ PWA app installed');
+            this.hideInstallButton();
+            
+            if (this.ui && this.ui.addMessage) {
+                this.ui.addMessage('📱 BrowserMind has been installed! You can now access it from your home screen.', 'system', false);
+            }
+        });
+    }
+
+    /**
+     * Show install button in UI
+     */
+    showInstallButton() {
+        // Check if button already exists
+        if (document.getElementById('pwaInstallBtn')) return;
+        
+        // Create install button
+        const installBtn = document.createElement('button');
+        installBtn.id = 'pwaInstallBtn';
+        installBtn.className = 'action-btn pwa-install-btn';
+        installBtn.title = 'Install BrowserMind';
+        installBtn.innerHTML = `
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7,10 12,15 17,10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            Install App
+        `;
+        
+        // Add click handler
+        installBtn.addEventListener('click', () => {
+            this.installPWA();
+        });
+        
+        // Add to settings section
+        const settingsSection = document.getElementById('settingsSection');
+        if (settingsSection) {
+            const cacheSubsection = settingsSection.querySelector('.subsection');
+            if (cacheSubsection) {
+                cacheSubsection.appendChild(installBtn);
+            }
+        }
+    }
+
+    /**
+     * Hide install button
+     */
+    hideInstallButton() {
+        const installBtn = document.getElementById('pwaInstallBtn');
+        if (installBtn) {
+            installBtn.remove();
+        }
+    }
+
+    /**
+     * Install PWA
+     */
+    async installPWA() {
+        if (!this.pwaInstallPrompt) {
+            console.log('📱 No install prompt available');
+            return;
+        }
+
+        try {
+            // Show the install prompt
+            this.pwaInstallPrompt.prompt();
+            
+            // Wait for the user to respond
+            const { outcome } = await this.pwaInstallPrompt.userChoice;
+            
+            if (outcome === 'accepted') {
+                console.log('✅ User accepted the install prompt');
+            } else {
+                console.log('❌ User dismissed the install prompt');
+            }
+            
+            // Clear the stored prompt
+            this.pwaInstallPrompt = null;
+            this.hideInstallButton();
+            
+        } catch (error) {
+            console.error('❌ PWA installation failed:', error);
+        }
+    }
+
+    /**
+     * Handle share target functionality
+     */
+    handleShareTarget() {
+        // Check if app was launched with shared content
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        if (urlParams.has('title') || urlParams.has('text') || urlParams.has('url')) {
+            const sharedTitle = urlParams.get('title') || '';
+            const sharedText = urlParams.get('text') || '';
+            const sharedUrl = urlParams.get('url') || '';
+            
+            // Combine shared content
+            let message = '';
+            if (sharedTitle) message += `Title: ${sharedTitle}\n`;
+            if (sharedText) message += `Text: ${sharedText}\n`;
+            if (sharedUrl) message += `URL: ${sharedUrl}\n`;
+            
+            if (message) {
+                message = `📤 Shared content:\n${message}\n\nHow can I help you with this?`;
+                
+                // Wait for app to initialize then add the shared content
+                setTimeout(() => {
+                    if (this.ui && this.ui.addMessage) {
+                        this.ui.addMessage(message, 'system', false);
+                        
+                        // Pre-fill the input if not too long
+                        if (this.ui.messageInput && message.length < 500) {
+                            this.ui.messageInput.value = `Help me understand this shared content: ${sharedText || sharedTitle || sharedUrl}`.slice(0, 200);
+                        }
+                    }
+                }, 2000);
+            }
+        }
+    }
+
+    /**
+     * Handle file handlers
+     */
+    handleFileHandlers() {
+        // Check if app was launched with files
+        if ('launchQueue' in window && 'files' in LaunchParams.prototype) {
+            window.launchQueue.setConsumer(async (launchParams) => {
+                if (launchParams.files && launchParams.files.length > 0) {
+                    for (const fileHandle of launchParams.files) {
+                        try {
+                            const file = await fileHandle.getFile();
+                            await this.handleImportedFile(file);
+                        } catch (error) {
+                            console.error('❌ Failed to handle imported file:', error);
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    /**
+     * Handle imported files
+     */
+    async handleImportedFile(file) {
+        try {
+            const text = await file.text();
+            const fileName = file.name;
+            const fileType = file.type;
+            
+            let message = `📁 Imported file: ${fileName}\n\n`;
+            
+            // Handle different file types
+            if (fileType === 'application/json') {
+                try {
+                    const jsonData = JSON.parse(text);
+                    message += `JSON content:\n\`\`\`json\n${JSON.stringify(jsonData, null, 2)}\`\`\`\n\nHow can I help you with this data?`;
+                } catch (e) {
+                    message += `File content:\n\`\`\`\n${text}\`\`\`\n\nHow can I help you with this file?`;
+                }
+            } else if (fileType === 'text/markdown') {
+                message += `Markdown content:\n\`\`\`markdown\n${text}\`\`\`\n\nHow can I help you with this document?`;
+            } else {
+                message += `Content:\n\`\`\`\n${text}\`\`\`\n\nHow can I help you with this file?`;
+            }
+            
+            // Add to chat
+            if (this.ui && this.ui.addMessage) {
+                this.ui.addMessage(message, 'system', false);
+            }
+            
+        } catch (error) {
+            console.error('❌ Failed to process imported file:', error);
+            if (this.ui && this.ui.addMessage) {
+                this.ui.addMessage(`❌ Failed to import file: ${file.name}. Please try again.`, 'system', false);
+            }
+        }
+    }
+
+    /**
+     * Handle protocol handlers
+     */
+    handleProtocolHandlers() {
+        // Check if app was launched with custom protocol
+        const urlParams = new URLSearchParams(window.location.search);
+        const chatParam = urlParams.get('chat');
+        
+        if (chatParam) {
+            // Decode the chat parameter
+            try {
+                const decodedMessage = decodeURIComponent(chatParam);
+                
+                // Wait for app to initialize then add the message
+                setTimeout(() => {
+                    if (this.ui && this.ui.addMessage) {
+                        this.ui.addMessage('🔗 Launched via protocol handler', 'system', false);
+                        
+                        // Pre-fill the input
+                        if (this.ui.messageInput) {
+                            this.ui.messageInput.value = decodedMessage;
+                            this.ui.messageInput.focus();
+                        }
+                    }
+                }, 2000);
+                
+            } catch (error) {
+                console.error('❌ Failed to decode protocol parameter:', error);
+            }
+        }
+    }
+
+    /**
+     * Add PWA utilities to UI
+     */
+    addPWAUtilities() {
+        // Add PWA status indicator
+        this.addPWAStatus();
+        
+        // Add offline notification
+        this.handleOfflineStatus();
+        
+        // Add update notification
+        this.handleAppUpdates();
+    }
+
+    /**
+     * Add PWA status indicator
+     */
+    addPWAStatus() {
+        // Check if running as PWA
+        const isPWA = window.matchMedia('(display-mode: standalone)').matches || 
+                      window.navigator.standalone || 
+                      document.referrer.includes('android-app://');
+        
+        if (isPWA) {
+            console.log('📱 Running as PWA');
+            
+            // Add PWA indicator to UI
+            const statusDiv = document.createElement('div');
+            statusDiv.className = 'pwa-status';
+            statusDiv.innerHTML = '📱 PWA Mode';
+            statusDiv.style.cssText = `
+                position: fixed;
+                top: 10px;
+                right: 10px;
+                background: rgba(139, 92, 246, 0.1);
+                color: #8b5cf6;
+                padding: 4px 8px;
+                border-radius: 4px;
+                font-size: 12px;
+                z-index: 1000;
+                border: 1px solid rgba(139, 92, 246, 0.2);
+            `;
+            
+            document.body.appendChild(statusDiv);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                statusDiv.remove();
+            }, 3000);
+        }
+    }
+
+    /**
+     * Handle offline/online status
+     */
+    handleOfflineStatus() {
+        const updateOnlineStatus = () => {
+            if (this.ui && this.ui.addMessage) {
+                if (navigator.onLine) {
+                    this.ui.addMessage('🌐 Back online! All features available.', 'system', false);
+                } else {
+                    this.ui.addMessage('📴 You\'re offline. BrowserMind continues to work locally!', 'system', false);
+                }
+            }
+        };
+
+        window.addEventListener('online', updateOnlineStatus);
+        window.addEventListener('offline', updateOnlineStatus);
+    }
+
+    /**
+     * Handle app updates
+     */
+    handleAppUpdates() {
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.addEventListener('message', (event) => {
+                if (event.data && event.data.type === 'UPDATE_AVAILABLE') {
+                    this.showUpdateNotification();
+                }
+            });
+        }
+    }
+
+    /**
+     * Show update notification
+     */
+    showUpdateNotification() {
+        if (this.ui && this.ui.addMessage) {
+            this.ui.addMessage('🔄 A new version of BrowserMind is available! Refresh the page to update.', 'system', false);
+        }
+        
+        // Add update button to settings
+        const updateBtn = document.createElement('button');
+        updateBtn.className = 'action-btn update-btn';
+        updateBtn.innerHTML = `
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="23,4 23,10 17,10"/>
+                <polyline points="1,20 1,14 7,14"/>
+                <path d="M20.49,9A9,9,0,0,0,5.64,5.64L1,10m22,4L18.36,18.36A9,9,0,0,1,3.51,15"/>
+            </svg>
+            Update App
+        `;
+        
+        updateBtn.addEventListener('click', () => {
+            window.location.reload();
+        });
+        
+        const settingsSection = document.getElementById('settingsSection');
+        if (settingsSection) {
+            const cacheSubsection = settingsSection.querySelector('.subsection');
+            if (cacheSubsection) {
+                cacheSubsection.appendChild(updateBtn);
+            }
         }
     }
 }

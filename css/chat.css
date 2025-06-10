@@ -117,6 +117,8 @@
     flex-direction: column;
     gap: 20px;
     min-width: 0; /* Allow shrinking */
+    contain: layout style;
+    will-change: scroll-position;
 }
 
 .messages::-webkit-scrollbar {
@@ -192,6 +194,9 @@
     word-wrap: break-word;
     overflow-wrap: break-word;
     position: relative;
+    contain: layout style paint;
+    content-visibility: auto;
+    contain-intrinsic-size: 0 100px;
 }
 
 .message.user {
