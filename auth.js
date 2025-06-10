@@ -167,12 +167,11 @@ class AuthManager {
         }
     }
 
-    // Show Google sign-in prompt with Chrome-specific handling
+    // Show Google sign-in - directly render button for immediate access
     signIn() {
         if (window.log) {
             window.log.debug('signIn() called', 'Auth');
             window.log.debug(`Auth initialized: ${this.isInitialized}, Google available: ${typeof google !== 'undefined'}`, 'Auth');
-            window.log.debug(`Browser: ${this.browserInfo.isChrome ? 'Chrome' : 'Other'}`, 'Auth');
         }
         
         if (!this.isInitialized) {
@@ -195,59 +194,8 @@ class AuthManager {
             window.log.debug('Attempting Google sign-in', 'Auth');
         }
 
-        // Always clear auth container first
-        const authContainer = document.getElementById('auth-container');
-        if (authContainer) {
-            authContainer.innerHTML = '';
-            authContainer.style.display = 'none';
-        }
-
-        // Chrome-specific approach: Skip the prompt and go directly to button
-        if (this.browserInfo.isChrome) {
-            if (window.log) {
-                window.log.debug('Chrome detected - using direct button approach', 'Auth');
-            }
-            setTimeout(() => this.renderSignInButton(), 50);
-            return;
-        }
-
-        // For non-Chrome browsers, try the prompt first
-        try {
-            google.accounts.id.prompt((notification) => {
-                if (window.log) {
-                    window.log.debug('Google prompt result received', 'Auth');
-                    window.log.debug('Notification details:', 'Auth', {
-                        isNotDisplayed: notification.isNotDisplayed(),
-                        isSkippedMoment: notification.isSkippedMoment(),
-                        isDismissedMoment: notification.isDismissedMoment()
-                    });
-                }
-                
-                if (notification.isNotDisplayed()) {
-                    if (window.log) {
-                        window.log.debug('Prompt blocked - showing fallback', 'Auth');
-                    }
-                    setTimeout(() => this.renderSignInButton(), 100);
-                } else if (notification.isSkippedMoment()) {
-                    if (window.log) {
-                        window.log.debug('User dismissed prompt', 'Auth');
-                    }
-                } else if (notification.isDismissedMoment()) {
-                    if (window.log) {
-                        window.log.debug('User dismissed popup', 'Auth');
-                    }
-                } else {
-                    if (window.log) {
-                        window.log.debug('Prompt shown successfully', 'Auth');
-                    }
-                }
-            });
-        } catch (error) {
-            if (window.log) {
-                window.log.error('Error with Google prompt', 'Auth', error);
-            }
-            setTimeout(() => this.renderSignInButton(), 100);
-        }
+        // Directly render the Google button for immediate interaction
+        this.renderSignInButton();
     }
 
     /**
@@ -268,42 +216,53 @@ class AuthManager {
         const authContainer = document.getElementById('auth-container');
         if (authContainer && !this.user) {
             try {
-                authContainer.innerHTML = '';
+                // Add helpful text above the button
+                authContainer.innerHTML = `
+                    <div style="text-align: center; margin-bottom: 12px;">
+                        <div style="color: #cbd5e1; font-size: 13px; margin-bottom: 8px;">Click the button below to sign in:</div>
+                    </div>
+                `;
                 
-                // Chrome-specific button configuration
+                // Create a container for the Google button
+                const buttonContainer = document.createElement('div');
+                buttonContainer.style.cssText = 'display: flex; justify-content: center; align-items: center;';
+                authContainer.appendChild(buttonContainer);
+                
+                // Enhanced button configuration
                 const buttonConfig = {
-                    theme: 'outline',
-                    size: 'medium',
+                    theme: 'filled_blue',
+                    size: 'large',
                     text: 'signin_with',
-                    width: 200
+                    width: 240,
+                    type: 'standard',
+                    shape: 'rectangular'
                 };
-
-                // Add Chrome-specific settings
-                if (this.browserInfo.isChrome) {
-                    buttonConfig.type = 'standard'; // Use standard type for better Chrome compatibility
-                    buttonConfig.shape = 'rectangular';
-                    buttonConfig.logo_alignment = 'left';
-                }
 
                 if (window.log) {
                     window.log.debug('Rendering Google sign-in button', 'Auth', buttonConfig);
                 }
                 
-                google.accounts.id.renderButton(authContainer, buttonConfig);
+                google.accounts.id.renderButton(buttonContainer, buttonConfig);
                 
                 authContainer.style.display = 'block';
 
-                // Add Chrome-specific event listeners
-                if (this.browserInfo.isChrome) {
-                    // Monitor for button click to provide better UX feedback
-                    authContainer.addEventListener('click', () => {
-                        if (window.log) {
-                            window.log.debug('Google sign-in button clicked in Chrome', 'Auth');
-                        }
-                        // Show loading state or helpful message
-                        this.showChromeSignInFeedback();
-                    });
-                }
+                // Add event listener for better UX feedback
+                buttonContainer.addEventListener('click', () => {
+                    if (window.log) {
+                        window.log.debug('Google sign-in button clicked', 'Auth');
+                    }
+                    // Show immediate feedback
+                    const feedbackDiv = document.createElement('div');
+                    feedbackDiv.style.cssText = `
+                        color: #06b6d4; 
+                        font-size: 12px; 
+                        text-align: center; 
+                        margin-top: 8px;
+                        animation: fadeIn 0.3s ease;
+                    `;
+                    feedbackDiv.textContent = '🔄 Opening Google sign-in...';
+                    authContainer.appendChild(feedbackDiv);
+                });
                 
             } catch (error) {
                 if (window.log) {
@@ -315,41 +274,6 @@ class AuthManager {
         }
     }
 
-    /**
-     * Show Chrome-specific sign-in feedback
-     */
-    showChromeSignInFeedback() {
-        if (this.browserInfo.isChrome) {
-            // Create a temporary status message
-            const authContainer = document.getElementById('auth-container');
-            if (authContainer) {
-                const statusDiv = document.createElement('div');
-                statusDiv.style.cssText = `
-                    position: absolute;
-                    background: #333;
-                    color: white;
-                    padding: 8px 12px;
-                    border-radius: 4px;
-                    font-size: 12px;
-                    top: 100%;
-                    left: 0;
-                    margin-top: 5px;
-                    white-space: nowrap;
-                    z-index: 1000;
-                    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-                `;
-                statusDiv.textContent = 'Opening Google sign-in...';
-                authContainer.appendChild(statusDiv);
-                
-                // Remove after 3 seconds
-                setTimeout(() => {
-                    if (statusDiv.parentNode) {
-                        statusDiv.parentNode.removeChild(statusDiv);
-                    }
-                }, 3000);
-            }
-        }
-    }
 
     /**
      * Create fallback sign-in button if Google button fails

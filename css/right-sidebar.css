@@ -64,12 +64,62 @@
     background: rgba(30, 41, 59, 0.5);
     border-radius: 12px;
     border: 1px solid rgba(148, 163, 184, 0.1);
+    position: relative;
+    overflow: hidden;
+    animation: authPromptPulse 3s ease-in-out infinite;
+}
+
+/* Interactive animated background */
+.auth-prompt::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+        45deg,
+        transparent,
+        rgba(139, 92, 246, 0.1),
+        transparent,
+        rgba(6, 182, 212, 0.1),
+        transparent
+    );
+    animation: authPromptSweep 4s linear infinite;
+    z-index: 1;
+}
+
+/* Floating particles background */
+.auth-prompt::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+        radial-gradient(circle at 20% 30%, rgba(139, 92, 246, 0.2) 1px, transparent 1px),
+        radial-gradient(circle at 80% 70%, rgba(6, 182, 212, 0.2) 1px, transparent 1px),
+        radial-gradient(circle at 60% 20%, rgba(139, 92, 246, 0.15) 1px, transparent 1px),
+        radial-gradient(circle at 30% 80%, rgba(6, 182, 212, 0.15) 1px, transparent 1px);
+    background-size: 50px 50px, 60px 60px, 40px 40px, 70px 70px;
+    animation: authPromptFloat 6s ease-in-out infinite;
+    z-index: 1;
+}
+
+/* Ensure content stays above animated backgrounds */
+.auth-prompt > * {
+    position: relative;
+    z-index: 2;
 }
 
 .auth-prompt-icon {
     font-size: 24px;
     line-height: 1;
     flex-shrink: 0;
+    animation: authIconBounce 2s ease-in-out infinite;
+    position: relative;
+    z-index: 3;
 }
 
 .auth-prompt-content h3 {
@@ -77,13 +127,39 @@
     font-weight: 600;
     color: #f8fafc;
     margin-bottom: 8px;
+    background: linear-gradient(135deg, #f8fafc, #8b5cf6, #06b6d4);
+    background-size: 200% 200%;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: authTextShimmer 3s ease-in-out infinite;
+    position: relative;
+    z-index: 3;
 }
 
 .auth-prompt-content p {
     font-size: 14px;
-    color: #94a3b8;
+    color: #cbd5e1;
     line-height: 1.5;
     margin: 0;
+    position: relative;
+    z-index: 3;
+    font-weight: 400;
+}
+
+/* Hover effect for the entire auth prompt */
+.auth-prompt:hover {
+    transform: translateY(-2px);
+    transition: transform 0.3s ease;
+    border-color: rgba(139, 92, 246, 0.4);
+}
+
+.auth-prompt:hover::before {
+    animation-duration: 2s;
+}
+
+.auth-prompt:hover .auth-prompt-icon {
+    animation-duration: 1s;
 }
 
 /* Sign In Button */
@@ -104,18 +180,42 @@
     width: 100%;
     font-family: inherit;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: hidden;
+    animation: authButtonGlow 4s ease-in-out infinite;
+}
+
+.right-sidebar .auth-sign-in-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(139, 92, 246, 0.1),
+        transparent
+    );
+    transition: left 0.5s ease;
+}
+
+.right-sidebar .auth-sign-in-btn:hover::before {
+    left: 100%;
 }
 
 .right-sidebar .auth-sign-in-btn:hover {
     background: white;
-    border-color: rgba(209, 213, 219, 0.5);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border-color: rgba(139, 92, 246, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(139, 92, 246, 0.2);
 }
 
 .right-sidebar .auth-sign-in-btn svg {
     width: 18px;
     height: 18px;
+    animation: authButtonIconSpin 8s linear infinite;
 }
 
 /* Signed In State */
@@ -247,6 +347,96 @@
     50% { 
         border-color: rgba(139, 92, 246, 0.5);
         box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+    }
+}
+
+/* Auth Prompt Interactive Animations */
+@keyframes authPromptPulse {
+    0%, 100% {
+        border-color: rgba(148, 163, 184, 0.1);
+        box-shadow: 0 0 0 rgba(139, 92, 246, 0);
+    }
+    50% {
+        border-color: rgba(139, 92, 246, 0.3);
+        box-shadow: 0 0 20px rgba(139, 92, 246, 0.2);
+    }
+}
+
+@keyframes authPromptSweep {
+    0% {
+        transform: translateX(-100%) translateY(-100%) rotate(45deg);
+    }
+    100% {
+        transform: translateX(100%) translateY(100%) rotate(45deg);
+    }
+}
+
+@keyframes authPromptFloat {
+    0%, 100% {
+        transform: translateY(0px) translateX(0px);
+        opacity: 0.8;
+    }
+    25% {
+        transform: translateY(-3px) translateX(2px);
+        opacity: 1;
+    }
+    50% {
+        transform: translateY(0px) translateX(4px);
+        opacity: 0.9;
+    }
+    75% {
+        transform: translateY(-2px) translateX(1px);
+        opacity: 1;
+    }
+}
+
+@keyframes authIconBounce {
+    0%, 100% {
+        transform: translateY(0px) scale(1);
+    }
+    50% {
+        transform: translateY(-2px) scale(1.05);
+    }
+}
+
+@keyframes authTextShimmer {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+@keyframes authButtonGlow {
+    0%, 100% {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    50% {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1), 0 0 20px rgba(139, 92, 246, 0.3);
+    }
+}
+
+@keyframes authButtonIconSpin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }
 
