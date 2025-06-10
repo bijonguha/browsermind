@@ -89,6 +89,14 @@ Note: You process everything locally for privacy. If you need context from outsi
             statusCallback('Checking WebGPU support...', 'loading');
             
             if (!navigator.gpu) {
+                console.error('WebGPU not supported in this browser');
+                statusCallback('WebGPU not supported', 'error');
+                
+                // Show a more user-friendly error if the compatibility check didn't catch this
+                if (!window.browserCompatibility || !document.querySelector('.compatibility-modal')) {
+                    this.showCompatibilityError();
+                }
+                
                 throw new Error('WebGPU not supported in this browser');
             }
 
@@ -172,5 +180,36 @@ Note: You process everything locally for privacy. If you need context from outsi
 
     getCurrentModel() {
         return this.availableModels.find(m => m.id === this.currentModel);
+    }
+    
+    /**
+     * Show a compatibility error message if WebGPU is not supported
+     * This is a fallback in case the browser-compatibility.js check doesn't catch it
+     */
+    showCompatibilityError() {
+        // Create a simple error message if the full compatibility modal isn't already shown
+        const errorDiv = document.createElement('div');
+        errorDiv.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: #fee2e2;
+            color: #dc2626;
+            padding: 16px;
+            text-align: center;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-size: 16px;
+            z-index: 9999;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        `;
+        
+        errorDiv.innerHTML = `
+            <strong>Browser Compatibility Error:</strong>
+            Your browser doesn't support WebGPU, which is required to run AI models in BrowserMind.
+            Please use a modern browser like Chrome 113+, Edge 113+, or Safari 17+.
+        `;
+        
+        document.body.prepend(errorDiv);
     }
 }
