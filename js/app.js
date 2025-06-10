@@ -170,42 +170,22 @@ class BrowserMindApp {
     }
 
     /**
-     * Handle low FPS scenarios with throttling
+     * Handle low FPS scenarios (silent optimization)
      */
     handleLowFPS(fps) {
-        // Only show message if not throttled
-        if (this.shouldShowPerformanceMessage('lowFPS') && this.ui && this.ui.addMessage) {
-            this.ui.addMessage(
-                `📊 Performance: Optimizing for better performance (FPS: ${fps.toFixed(1)})`,
-                'system',
-                false
-            );
-            // Clean up excessive messages
-            this.cleanupExcessiveSystemMessages();
-        }
+        console.log(`📊 Performance: Optimizing for better performance (FPS: ${fps.toFixed(1)})`);
         
-        // Always apply optimizations regardless of message throttling
+        // Apply optimizations silently - no chat messages
         this.optimizeChatAnimations();
     }
 
     /**
-     * Handle high memory usage with throttling
+     * Handle high memory usage (silent optimization)
      */
     handleHighMemoryUsage(ratio) {
         console.warn(`🧠 High memory usage detected: ${(ratio * 100).toFixed(1)}%`);
         
-        // Only show message if not throttled
-        if (this.shouldShowPerformanceMessage('highMemory') && this.ui && this.ui.addMessage) {
-            this.ui.addMessage(
-                `🧠 Memory: Optimizing memory usage (${(ratio * 100).toFixed(1)}% used)`,
-                'system',
-                false
-            );
-            // Clean up excessive messages
-            this.cleanupExcessiveSystemMessages();
-        }
-        
-        // Always apply optimizations regardless of message throttling
+        // Apply optimizations silently - no chat messages
         if (this.chatManager && this.chatManager.conversationHistory.length > 20) {
             this.chatManager.conversationHistory = this.chatManager.conversationHistory.slice(-10);
             this.chatManager.saveConversationHistory();
@@ -218,23 +198,12 @@ class BrowserMindApp {
     }
 
     /**
-     * Handle long tasks with throttling
+     * Handle long tasks (silent optimization)
      */
     handleLongTask(duration) {
         console.warn(`⏱️ Long task detected: ${duration}ms`);
         
-        // Only show message if not throttled and duration is significant
-        if (duration > 100 && this.shouldShowPerformanceMessage('longTask') && this.ui && this.ui.addMessage) {
-            this.ui.addMessage(
-                `⏱️ Performance: Detected long task (${duration}ms), optimizing...`,
-                'system',
-                false
-            );
-            // Clean up excessive messages
-            this.cleanupExcessiveSystemMessages();
-        }
-        
-        // Always apply optimizations regardless of message throttling
+        // Apply optimizations silently - no chat messages
         this.enableTaskScheduling = true;
     }
 
@@ -244,16 +213,8 @@ class BrowserMindApp {
     handleLayoutShift(score) {
         console.warn(`📐 Layout shift detected: ${score}`);
         
-        // Only show message if not throttled and score is significant
-        if (score > 0.1 && this.shouldShowPerformanceMessage('layoutShift') && this.ui && this.ui.addMessage) {
-            this.ui.addMessage(
-                `📐 Layout: Preventing layout shifts (score: ${score.toFixed(3)})`,
-                'system',
-                false
-            );
-            // Clean up excessive messages
-            this.cleanupExcessiveSystemMessages();
-        }
+        // Apply optimizations silently - no chat messages
+        // Performance optimizations are applied without user notification
         
         // Always apply optimizations regardless of message throttling
         this.preventLayoutShifts();
@@ -285,10 +246,8 @@ class BrowserMindApp {
      * Start periodic cleanup of performance messages
      */
     startPerformanceMessageCleanup() {
-        // Clean up every 30 seconds
-        setInterval(() => {
-            this.cleanupExcessiveSystemMessages();
-        }, 30000);
+        // Performance optimizations run silently without user messages
+        // No cleanup needed since no messages are generated
     }
 
     /**
