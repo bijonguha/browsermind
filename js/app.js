@@ -15,6 +15,14 @@ class BrowserMindApp {
         // PWA features
         this.pwaInstallPrompt = null;
         
+        // Performance message throttling
+        this.performanceMessageThrottles = {
+            lowFPS: { lastShown: 0, cooldown: 30000 }, // 30 seconds
+            highMemory: { lastShown: 0, cooldown: 60000 }, // 1 minute
+            longTask: { lastShown: 0, cooldown: 45000 }, // 45 seconds
+            layoutShift: { lastShown: 0, cooldown: 30000 } // 30 seconds
+        };
+        
         // Start progressive initialization
         this.progressiveInitialization();
         
@@ -85,6 +93,12 @@ class BrowserMindApp {
         // Setup performance monitoring
         this.setupPerformanceMonitoring();
         
+        // Auto-cleanup performance messages periodically
+        this.startPerformanceMessageCleanup();
+        
+        // Apply layout fixes immediately to prevent input hiding
+        this.preventLayoutShifts();
+        
         // Wait for DOM to be ready
         await this.waitForDOMReady();
         
@@ -118,7 +132,7 @@ class BrowserMindApp {
     }
 
     /**
-     * Handle performance warnings
+     * Handle performance warnings with throttling
      */
     handlePerformanceWarning(type, data) {
         switch (type) {
@@ -141,28 +155,57 @@ class BrowserMindApp {
     }
 
     /**
-     * Handle low FPS scenarios
+     * Check if we should show a performance message (throttling)
+     */
+    shouldShowPerformanceMessage(type) {
+        const now = Date.now();
+        const throttle = this.performanceMessageThrottles[type];
+        
+        if (!throttle || (now - throttle.lastShown) >= throttle.cooldown) {
+            if (throttle) throttle.lastShown = now;
+            return true;
+        }
+        
+        return false;
+    }
+
+    /**
+     * Handle low FPS scenarios with throttling
      */
     handleLowFPS(fps) {
-        if (this.ui && this.ui.addMessage) {
+        // Only show message if not throttled
+        if (this.shouldShowPerformanceMessage('lowFPS') && this.ui && this.ui.addMessage) {
             this.ui.addMessage(
                 `📊 Performance: Optimizing for better performance (FPS: ${fps.toFixed(1)})`,
                 'system',
                 false
             );
+            // Clean up excessive messages
+            this.cleanupExcessiveSystemMessages();
         }
         
-        // Reduce chat animation frequency
+        // Always apply optimizations regardless of message throttling
         this.optimizeChatAnimations();
     }
 
     /**
-     * Handle high memory usage
+     * Handle high memory usage with throttling
      */
     handleHighMemoryUsage(ratio) {
         console.warn(`🧠 High memory usage detected: ${(ratio * 100).toFixed(1)}%`);
         
-        // Clear old messages to free memory
+        // Only show message if not throttled
+        if (this.shouldShowPerformanceMessage('highMemory') && this.ui && this.ui.addMessage) {
+            this.ui.addMessage(
+                `🧠 Memory: Optimizing memory usage (${(ratio * 100).toFixed(1)}% used)`,
+                'system',
+                false
+            );
+            // Clean up excessive messages
+            this.cleanupExcessiveSystemMessages();
+        }
+        
+        // Always apply optimizations regardless of message throttling
         if (this.chatManager && this.chatManager.conversationHistory.length > 20) {
             this.chatManager.conversationHistory = this.chatManager.conversationHistory.slice(-10);
             this.chatManager.saveConversationHistory();
@@ -175,23 +218,77 @@ class BrowserMindApp {
     }
 
     /**
-     * Handle long tasks
+     * Handle long tasks with throttling
      */
     handleLongTask(duration) {
         console.warn(`⏱️ Long task detected: ${duration}ms`);
         
-        // Break up future operations if possible
+        // Only show message if not throttled and duration is significant
+        if (duration > 100 && this.shouldShowPerformanceMessage('longTask') && this.ui && this.ui.addMessage) {
+            this.ui.addMessage(
+                `⏱️ Performance: Detected long task (${duration}ms), optimizing...`,
+                'system',
+                false
+            );
+            // Clean up excessive messages
+            this.cleanupExcessiveSystemMessages();
+        }
+        
+        // Always apply optimizations regardless of message throttling
         this.enableTaskScheduling = true;
     }
 
     /**
-     * Handle layout shifts
+     * Handle layout shifts with throttling
      */
     handleLayoutShift(score) {
         console.warn(`📐 Layout shift detected: ${score}`);
         
-        // Add CSS to prevent future shifts
+        // Only show message if not throttled and score is significant
+        if (score > 0.1 && this.shouldShowPerformanceMessage('layoutShift') && this.ui && this.ui.addMessage) {
+            this.ui.addMessage(
+                `📐 Layout: Preventing layout shifts (score: ${score.toFixed(3)})`,
+                'system',
+                false
+            );
+            // Clean up excessive messages
+            this.cleanupExcessiveSystemMessages();
+        }
+        
+        // Always apply optimizations regardless of message throttling
         this.preventLayoutShifts();
+    }
+
+    /**
+     * Clean up excessive system messages to prevent chat overflow
+     */
+    cleanupExcessiveSystemMessages() {
+        if (!this.ui || !this.ui.messagesElement) return;
+        
+        const systemMessages = this.ui.messagesElement.querySelectorAll('.message.system');
+        const maxSystemMessages = 5; // Keep only the last 5 system messages
+        
+        if (systemMessages.length > maxSystemMessages) {
+            const messagesToRemove = Array.from(systemMessages).slice(0, systemMessages.length - maxSystemMessages);
+            messagesToRemove.forEach(message => {
+                // Only remove performance-related system messages
+                if (message.textContent.includes('Performance:') || 
+                    message.textContent.includes('Memory:') || 
+                    message.textContent.includes('Layout:')) {
+                    message.remove();
+                }
+            });
+        }
+    }
+
+    /**
+     * Start periodic cleanup of performance messages
+     */
+    startPerformanceMessageCleanup() {
+        // Clean up every 30 seconds
+        setInterval(() => {
+            this.cleanupExcessiveSystemMessages();
+        }, 30000);
     }
 
     /**
@@ -220,7 +317,7 @@ class BrowserMindApp {
     }
 
     /**
-     * Prevent layout shifts
+     * Prevent layout shifts and ensure chat input visibility
      */
     preventLayoutShifts() {
         const style = document.createElement('style');
@@ -236,6 +333,29 @@ class BrowserMindApp {
             
             .chat-header {
                 min-height: 80px;
+            }
+            
+            /* Ensure chat input area is always visible */
+            .input-container {
+                position: sticky;
+                bottom: 0;
+                z-index: 100;
+                background: inherit;
+                min-height: 80px;
+            }
+            
+            /* Prevent message overflow from hiding input */
+            .messages {
+                max-height: calc(100vh - 200px);
+                overflow-y: auto;
+                padding-bottom: 20px;
+            }
+            
+            /* Limit system message height to prevent spam */
+            .message.system {
+                max-height: 100px;
+                overflow: hidden;
+                transition: opacity 0.3s ease;
             }
         `;
         
