@@ -57,6 +57,19 @@ class BrowserMindApp {
             this.ui.messageInput.style.height = Math.min(this.ui.messageInput.scrollHeight, 120) + 'px';
         });
 
+        // Show auth prompt when user tries to interact with disabled input
+        this.ui.messageInput.addEventListener('focus', () => {
+            if (this.ui.messageInput.disabled) {
+                this.requireAuth();
+            }
+        });
+
+        this.ui.messageInput.addEventListener('click', () => {
+            if (this.ui.messageInput.disabled) {
+                this.requireAuth();
+            }
+        });
+
         // Action buttons with auth guards
         this.ui.clearAllBtn.addEventListener('click', () => {
             if (this.requireAuth()) return;
@@ -146,8 +159,8 @@ class BrowserMindApp {
             }, 2000);
         }
         
-        // Show a toast message
-        this.ui.addMessage('🔐 Please sign in to use this feature. Click the Sign in button above to get started!', 'system', false);
+        // Show a toast message with red background
+        this.ui.addMessage('🔐 Please sign in to use this feature. Click the Sign in button above to get started!', 'system', false, 'auth-required');
     }
 
     async initializeEngine() {
@@ -188,7 +201,6 @@ class BrowserMindApp {
             setTimeout(() => {
                 this.ui.showProgress(false);
                 this.ui.setInputEnabled(true);
-                this.ui.messageInput.placeholder = 'Type your message here...';
 
                 // Update header with current model name
                 const currentModel = this.engine.getCurrentModel();
@@ -339,7 +351,12 @@ class BrowserMindApp {
     }
 
     updateChatHistoryDisplay() {
-        this.sidebar.updateChatHistoryDisplay(this.chatManager.archivedChats, this.chatManager.currentChatId);
+        // Only show chat history if user is authenticated
+        if (window.authManager && window.authManager.isAuthenticated()) {
+            this.sidebar.updateChatHistoryDisplay(this.chatManager.archivedChats, this.chatManager.currentChatId);
+        } else {
+            this.sidebar.showAuthRequiredForHistory();
+        }
     }
 
     async switchModel(modelId) {
@@ -627,6 +644,12 @@ class BrowserMindApp {
                     // Update input state based on initial auth status
                     setTimeout(() => {
                         this.ui.setInputEnabled(this.engine.engine !== null);
+                        
+                        // If user is already authenticated, load their data
+                        if (window.authManager.isAuthenticated()) {
+                            this.chatManager.initializeForAuthenticatedUser();
+                        }
+                        this.updateChatHistoryDisplay();
                     }, 100);
                 } catch (error) {
                     console.warn('Authentication initialization failed:', error);

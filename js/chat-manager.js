@@ -5,8 +5,23 @@ export class ChatManager {
         this.currentChatId = null;
         this.originalChatLength = 0;
         this.maxHistoryLength = 20;
+        // Don't load archived chats immediately - wait for auth check
+        // this.loadArchivedChats();
+        // this.loadConversationHistory();
+    }
+
+    // Initialize data loading for authenticated users
+    initializeForAuthenticatedUser() {
         this.loadArchivedChats();
         this.loadConversationHistory();
+    }
+
+    // Clear data when user signs out
+    clearForUnauthenticatedUser() {
+        this.conversationHistory = [];
+        this.archivedChats = [];
+        this.currentChatId = null;
+        this.originalChatLength = 0;
     }
 
     addMessage(content, role, timestamp = new Date().toISOString()) {

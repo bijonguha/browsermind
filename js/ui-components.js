@@ -380,9 +380,9 @@ export class UIComponents {
         this.messageInput.style.height = 'auto';
     }
 
-    addMessage(content, type = 'user', saveToHistory = true) {
+    addMessage(content, type = 'user', saveToHistory = true, extraClass = '') {
         const messageDiv = document.createElement('div');
-        messageDiv.className = `message ${type}`;
+        messageDiv.className = `message ${type}${extraClass ? ' ' + extraClass : ''}`;
         
         // Create content container
         const contentDiv = document.createElement('div');

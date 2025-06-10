@@ -545,6 +545,10 @@ class AuthManager {
             // Update input state when user signs in
             if (window.app && window.app.ui) {
                 window.app.ui.setInputEnabled(true);
+                // Initialize chat manager for authenticated user
+                window.app.chatManager.initializeForAuthenticatedUser();
+                // Refresh chat history display to show user's conversations
+                window.app.updateChatHistoryDisplay();
             }
         } else {
             // User is not signed in - show sign in button
@@ -566,6 +570,10 @@ class AuthManager {
             // Update input state when user signs out
             if (window.app && window.app.ui) {
                 window.app.ui.setInputEnabled(false);
+                // Clear chat data for unauthenticated user
+                window.app.chatManager.clearForUnauthenticatedUser();
+                // Hide chat history and show auth required message
+                window.app.updateChatHistoryDisplay();
             }
         }
     }

@@ -219,6 +219,19 @@
     text-align: center;
 }
 
+/* Auth required system messages */
+.message.system.auth-required {
+    background: rgba(239, 68, 68, 0.2);
+    color: #fecaca;
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    font-weight: 500;
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.1);
+}
+
+.message.system.auth-required .message-content {
+    color: #fecaca;
+}
+
 /* Copy Button for Assistant Messages */
 .message-actions {
     display: flex;

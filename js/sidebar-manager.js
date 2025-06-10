@@ -112,6 +112,18 @@ export class SidebarManager {
         }
     }
 
+    showAuthRequiredForHistory() {
+        this.ui.chatHistoryList.innerHTML = `
+            <div class="auth-required-message">
+                <div class="auth-required-icon">🔐</div>
+                <div class="auth-required-content">
+                    <h4>Sign in Required</h4>
+                    <p>Sign in to access your conversation history and sync across devices.</p>
+                </div>
+            </div>
+        `;
+    }
+
     updateChatHistoryDisplay(archivedChats, currentChatId) {
         if (archivedChats.length === 0) {
             this.ui.chatHistoryList.innerHTML = `
