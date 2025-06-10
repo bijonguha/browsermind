@@ -1,5 +1,5 @@
 {
-  "version": "0.1.0-alpha",
+  "version": "0.2.0",
   "name": "BrowserMind",
   "description": "Local AI assistant running in your browser",
   "build": {
