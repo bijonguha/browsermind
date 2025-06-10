@@ -10,22 +10,72 @@ class BrowserMindInit {
         this.errors = [];
         this.startTime = Date.now();
     }
+    
+    /**
+     * Check if the browser is compatible with the application
+     * This is a secondary check in addition to browser-compatibility.js
+     * @returns {boolean} True if compatible, false otherwise
+     */
+    checkBrowserCompatibility() {
+        // Check if the compatibility check has already been performed by browser-compatibility.js
+        if (window.browserCompatibility) {
+            // If the compatibility modal is visible, browser is incompatible
+            if (document.querySelector('.compatibility-modal')) {
+                return false;
+            }
+            
+            return true;
+        }
+        
+        // Perform our own compatibility check
+        const hasWebGPU = !!window.navigator.gpu;
+        
+        // Check ES6+ features
+        let hasES6 = true;
+        try {
+            // Test arrow functions
+            eval("() => {}");
+            
+            // Test promises
+            if (typeof Promise === 'undefined') hasES6 = false;
+            
+            // Test template literals
+            eval("`test`");
+        } catch (e) {
+            hasES6 = false;
+        }
+        
+        // If incompatible, show error
+        if (!hasWebGPU || !hasES6) {
+            // Show error message
+            this.showErrorMessage(
+                'Browser Compatibility Error: Your browser doesn\'t support the required features. ' +
+                'Please use a modern browser like Chrome 113+, Edge 113+, or Safari 17+.'
+            );
+            
+            return false;
+        }
+        
+        return true;
+    }
 
     async initialize() {
         try {
             console.log('🚀 Starting BrowserMind initialization...');
             
-            // Step 1: Verify dependencies
-            this.updateProgress(1, 'Checking dependencies...');
+            // Step 1: Check browser compatibility
+            this.updateProgress(1, 'Checking browser compatibility...');
+            if (!this.checkBrowserCompatibility()) {
+                return; // Stop initialization if browser is incompatible
+            }
+            
+            // Step 2: Verify dependencies
+            this.updateProgress(2, 'Checking dependencies...');
             await this.verifyDependencies();
             
-            // Step 2: Initialize authentication
-            this.updateProgress(2, 'Setting up authentication...');
+            // Step 3: Initialize authentication
+            this.updateProgress(3, 'Setting up authentication...');
             await this.initializeAuth();
-            
-            // Step 3: Initialize analytics
-            this.updateProgress(3, 'Initializing analytics...');
-            await this.initializeAnalytics();
             
             // Step 4: Start main application
             this.updateProgress(4, 'Starting application...');

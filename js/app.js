@@ -167,6 +167,13 @@ class BrowserMindApp {
     async initializeEngine() {
         try {
             console.log('🔧 Starting engine initialization...');
+            
+            // Check browser compatibility first
+            if (!this.checkBrowserCompatibility()) {
+                this.ui.addMessage('Your browser is not compatible with BrowserMind. Please use a modern browser like Chrome 113+, Edge 113+, or Safari 17+.', 'system', false);
+                return;
+            }
+            
             console.log('🔍 Checking UI elements availability:', {
                 progressContainer: !!this.ui.progressContainer,
                 progressFill: !!this.ui.progressFill,
@@ -697,6 +704,44 @@ class BrowserMindApp {
             console.log(`🚀 BrowserMind v${versionData.version} loaded`);
         } catch (error) {
             console.warn('Could not load version info:', error);
+        }
+    }
+    
+    /**
+     * Check browser compatibility
+     * This is a tertiary check in addition to browser-compatibility.js and init.js
+     * @returns {boolean} True if compatible, false otherwise
+     */
+    checkBrowserCompatibility() {
+        // Check if compatibility has already been verified
+        if (window.browserCompatibility) {
+            // If the compatibility modal is visible, browser is incompatible
+            if (document.querySelector('.compatibility-modal')) {
+                return false;
+            }
+            return true;
+        }
+        
+        // Check WebGPU support
+        const hasWebGPU = !!window.navigator.gpu;
+        if (!hasWebGPU) {
+            return false;
+        }
+        
+        // Check ES6+ features
+        try {
+            // Test arrow functions
+            eval("() => {}");
+            
+            // Test promises
+            if (typeof Promise === 'undefined') return false;
+            
+            // Test template literals
+            eval("`test`");
+            
+            return true;
+        } catch (e) {
+            return false;
         }
     }
 }
