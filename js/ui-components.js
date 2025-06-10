@@ -384,6 +384,20 @@ export class UIComponents {
         const messageDiv = document.createElement('div');
         messageDiv.className = `message ${type}${extraClass ? ' ' + extraClass : ''}`;
         
+        // Add error styling for failed model loading messages
+        if (type === 'system' && content.includes('Failed to load the AI model')) {
+            messageDiv.classList.add('error-message');
+            
+            // Add inline styles for the error message
+            messageDiv.style.backgroundColor = '#fee2e2';
+            messageDiv.style.color = '#b91c1c';
+            messageDiv.style.borderLeft = '4px solid #dc2626';
+            messageDiv.style.padding = '12px 16px';
+            messageDiv.style.margin = '12px 0';
+            messageDiv.style.borderRadius = '6px';
+            messageDiv.style.fontWeight = '500';
+        }
+        
         // Create content container
         const contentDiv = document.createElement('div');
         contentDiv.className = 'message-content';

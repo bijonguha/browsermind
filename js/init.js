@@ -169,13 +169,15 @@ class BrowserMindInit {
             top: 20px;
             right: 20px;
             background: #fee2e2;
-            color: #dc2626;
+            color: #b91c1c;
             padding: 16px;
             border-radius: 8px;
-            border: 1px solid #fecaca;
+            border: 2px solid #dc2626;
             max-width: 400px;
             z-index: 9999;
             font-family: system-ui, -apple-system, sans-serif;
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
+            font-weight: 500;
         `;
         errorDiv.innerHTML = `
             <strong>Initialization Error</strong><br>

@@ -195,13 +195,15 @@ Note: You process everything locally for privacy. If you need context from outsi
             left: 0;
             width: 100%;
             background-color: #fee2e2;
-            color: #dc2626;
+            color: #b91c1c;
             padding: 16px;
             text-align: center;
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             font-size: 16px;
+            font-weight: 500;
             z-index: 9999;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
+            border-bottom: 4px solid #dc2626;
         `;
         
         errorDiv.innerHTML = `
