@@ -577,6 +577,7 @@ class AuthManager {
 
 // Create global instance
 window.authManager = new AuthManager();
+console.log('✅ window.authManager created:', typeof window.authManager);
 
 // Initialize event handlers when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {

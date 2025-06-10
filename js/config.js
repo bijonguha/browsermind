@@ -494,9 +494,10 @@ class AppConfig {
 // Create global configuration instance
 window.appConfig = new AppConfig();
 
-// Export for ES6 modules
-export { AppConfig };
-export default window.appConfig;
+// Export for ES6 modules if needed
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = AppConfig;
+}
 
 // Convenient global functions for runtime configuration
 window.setEnvironment = (env) => window.appConfig.setEnvironment(env);
@@ -506,6 +507,7 @@ window.getEnvironment = () => window.appConfig.get('app.environment');
 window.getLogLevel = () => window.appConfig.get('logging.level');
 
 console.log('🔧 Application configuration loaded');
+console.log('✅ window.appConfig created:', typeof window.appConfig);
 
 // Show current environment info
 const env = window.appConfig.get('app.environment');

@@ -36,16 +36,45 @@ class BrowserMindInit {
             
         } catch (error) {
             console.error('❌ Initialization failed:', error);
+            console.error('Debug info:', {
+                appConfig: typeof window.appConfig,
+                authManager: typeof window.authManager,
+                BrowserUtils: typeof window.BrowserUtils,
+                seoAnalytics: typeof window.seoAnalytics
+            });
             this.showErrorMessage(error.message);
         }
     }
 
     async verifyDependencies() {
-        const required = ['appConfig', 'authManager', 'BrowserUtils'];
-        const missing = required.filter(dep => typeof window[dep] === 'undefined');
+        // Wait for critical dependencies to load with timeout
+        const critical = ['appConfig', 'BrowserUtils'];
+        const optional = ['authManager', 'seoAnalytics'];
+        const maxWait = 5000; // 5 seconds
+        const checkInterval = 100; // 100ms
+        let waited = 0;
         
-        if (missing.length > 0) {
-            throw new Error(`Missing dependencies: ${missing.join(', ')}`);
+        while (waited < maxWait) {
+            const missingCritical = critical.filter(dep => typeof window[dep] === 'undefined');
+            
+            if (missingCritical.length === 0) {
+                // Critical dependencies loaded, check optional ones
+                const missingOptional = optional.filter(dep => typeof window[dep] === 'undefined');
+                if (missingOptional.length > 0) {
+                    console.warn('Optional dependencies not loaded:', missingOptional);
+                }
+                return; // Continue with initialization
+            }
+            
+            // Wait a bit more
+            await new Promise(resolve => setTimeout(resolve, checkInterval));
+            waited += checkInterval;
+        }
+        
+        // Final check for critical dependencies
+        const missingCritical = critical.filter(dep => typeof window[dep] === 'undefined');
+        if (missingCritical.length > 0) {
+            throw new Error(`Missing critical dependencies after ${maxWait}ms: ${missingCritical.join(', ')}`);
         }
     }
 
@@ -113,8 +142,11 @@ class BrowserMindInit {
     }
 }
 
-// Initialize when DOM is ready
+// Initialize when DOM is ready with a small delay to ensure all scripts load
 document.addEventListener('DOMContentLoaded', async () => {
+    // Small delay to ensure all scripts are executed
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
     window.browserMindInit = new BrowserMindInit();
     await window.browserMindInit.initialize();
 });

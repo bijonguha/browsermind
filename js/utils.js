@@ -66,3 +66,4 @@ window.BrowserUtils = BrowserUtils;
 window.log = BrowserUtils.createLogger();
 
 console.log('🔧 Browser utilities loaded');
+console.log('✅ window.BrowserUtils created:', typeof window.BrowserUtils);
