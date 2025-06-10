@@ -124,11 +124,22 @@ export class SidebarManager {
         `;
     }
 
-    updateChatHistoryDisplay(archivedChats, currentChatId) {
-        if (archivedChats.length === 0) {
+    updateChatHistoryDisplay(archivedChats, currentChatId, currentChat = null) {
+        // Combine current chat with archived chats for display
+        const allChats = [];
+        
+        // Add current chat at the beginning if it exists
+        if (currentChat) {
+            allChats.push(currentChat);
+        }
+        
+        // Add archived chats
+        allChats.push(...archivedChats);
+        
+        if (allChats.length === 0) {
             this.ui.chatHistoryList.innerHTML = `
                 <div class="chat-history-empty">
-                    <p>No previous conversations</p>
+                    <p>No conversations yet</p>
                 </div>
             `;
             return;
@@ -136,7 +147,7 @@ export class SidebarManager {
         
         this.ui.chatHistoryList.innerHTML = '';
         
-        archivedChats.forEach(chat => {
+        allChats.forEach(chat => {
             const chatItem = this.createChatHistoryItem(chat);
             this.ui.chatHistoryList.appendChild(chatItem);
         });
@@ -147,6 +158,9 @@ export class SidebarManager {
     createChatHistoryItem(chat) {
         const item = document.createElement('div');
         item.className = 'chat-history-item';
+        if (chat.isCurrent) {
+            item.classList.add('current-chat');
+        }
         item.dataset.chatId = chat.id;
         
         const date = new Date(chat.created);
@@ -155,6 +169,10 @@ export class SidebarManager {
             date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) :
             date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
         
+        // Truncate chat ID for display (first 8 characters)
+        const displayId = chat.id.length > 8 ? chat.id.substring(0, 8) + '...' : chat.id;
+        const currentLabel = chat.isCurrent ? '<span class="current-label">ACTIVE</span> ' : '';
+        
         item.innerHTML = `
             <div class="chat-history-item-icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -162,17 +180,23 @@ export class SidebarManager {
                 </svg>
             </div>
             <div class="chat-history-item-content">
-                <div class="chat-history-item-title">${chat.title}</div>
-                <div class="chat-history-item-date">${dateStr} • ${chat.messageCount} messages</div>
+                <div class="chat-history-item-title">${currentLabel}${chat.title}</div>
+                <div class="chat-history-item-meta">
+                    <span class="chat-id">ID: ${displayId}</span> • 
+                    <span class="message-count">${chat.messageCount} msg${chat.messageCount !== 1 ? 's' : ''}</span> • 
+                    <span class="chat-date">${dateStr}</span>
+                </div>
             </div>
             <div class="chat-history-item-actions">
-                <button class="chat-history-action-btn" data-action="delete" title="Delete chat">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6m3 0V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
-                        <line x1="10" y1="11" x2="10" y2="17"/>
-                        <line x1="14" y1="11" x2="14" y2="17"/>
-                    </svg>
-                </button>
+                ${!chat.isCurrent ? `
+                    <button class="chat-history-action-btn" data-action="delete" title="Delete chat">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6m3 0V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+                            <line x1="10" y1="11" x2="10" y2="17"/>
+                            <line x1="14" y1="11" x2="14" y2="17"/>
+                        </svg>
+                    </button>
+                ` : ''}
             </div>
         `;
         

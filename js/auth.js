@@ -494,8 +494,12 @@ class AuthManager {
             // Update input state when user signs out
             if (window.app && window.app.ui) {
                 window.app.ui.setInputEnabled(false);
-                // Clear chat data for unauthenticated user
+                // Clear chat data for unauthenticated user (auto-saves current chat)
                 window.app.chatManager.clearForUnauthenticatedUser();
+                // Clear the main chat UI to start fresh
+                window.app.ui.clearMessages(false);
+                // Add sign out message to the fresh UI
+                window.app.ui.addMessage('👋 You have signed out successfully. Sign in again to access your conversations.', 'system', false);
                 // Hide chat history and show auth required message
                 window.app.updateChatHistoryDisplay();
             }

@@ -72,11 +72,9 @@ class BrowserMindApp {
 
         // Action buttons with auth guards
         this.ui.clearAllBtn.addEventListener('click', () => {
-            if (this.requireAuth()) return;
             this.clearEverything();
         });
         this.ui.clearCacheBtn.addEventListener('click', () => {
-            if (this.requireAuth()) return;
             this.clearCache();
         });
         this.ui.clearHistoryBtn.addEventListener('click', () => {
@@ -107,7 +105,10 @@ class BrowserMindApp {
                 e.stopPropagation();
                 this.deleteArchivedChat(chatItem.dataset.chatId);
             } else if (chatItem) {
-                this.restoreArchivedConversation(chatItem.dataset.chatId);
+                // Don't restore if it's the current chat
+                if (!chatItem.classList.contains('current-chat')) {
+                    this.restoreArchivedConversation(chatItem.dataset.chatId);
+                }
             }
         });
         
@@ -259,6 +260,8 @@ class BrowserMindApp {
         } finally {
             this.ui.setInputEnabled(true);
             this.ui.showLoading(false);
+            // Update chat history to reflect new message count
+            this.updateChatHistoryDisplay();
         }
     }
 
@@ -353,7 +356,24 @@ class BrowserMindApp {
     updateChatHistoryDisplay() {
         // Only show chat history if user is authenticated
         if (window.authManager && window.authManager.isAuthenticated()) {
-            this.sidebar.updateChatHistoryDisplay(this.chatManager.archivedChats, this.chatManager.currentChatId);
+            // Create current chat data if there's an active conversation
+            const currentChat = this.chatManager.conversationHistory.length > 0 ? {
+                id: this.chatManager.currentChatId || 'current',
+                title: this.chatManager.currentChatId ? 
+                    this.chatManager.generateChatTitle(this.chatManager.conversationHistory[0].content) : 
+                    'Current Chat',
+                messages: this.chatManager.conversationHistory,
+                messageCount: this.chatManager.conversationHistory.length,
+                created: new Date().toISOString(),
+                lastModified: new Date().toISOString(),
+                isCurrent: true
+            } : null;
+            
+            this.sidebar.updateChatHistoryDisplay(
+                this.chatManager.archivedChats, 
+                this.chatManager.currentChatId,
+                currentChat
+            );
         } else {
             this.sidebar.showAuthRequiredForHistory();
         }
@@ -476,6 +496,9 @@ class BrowserMindApp {
                 );
             }
 
+            // Clear chat data first
+            this.chatManager.clearAllUserData();
+            
             // Clear Local Storage
             localStorage.clear();
             
@@ -504,8 +527,8 @@ class BrowserMindApp {
         try {
             this.ui.updateStatus('Clearing everything...', 'loading');
             
-            // Clear conversation history and archived chats
-            this.chatManager.clearHistory();
+            // Clear conversation history and archived chats for all users
+            this.chatManager.clearAllUserData();
             
             // Clear all localStorage
             localStorage.clear();

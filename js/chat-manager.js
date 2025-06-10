@@ -18,16 +18,38 @@ export class ChatManager {
 
     // Clear data when user signs out
     clearForUnauthenticatedUser() {
+        // Auto-save current conversation before clearing if it has messages
+        if (this.conversationHistory.length > 0) {
+            this.archiveCurrentConversation();
+        }
+        
+        // Clear in-memory data
         this.conversationHistory = [];
         this.archivedChats = [];
         this.currentChatId = null;
         this.originalChatLength = 0;
+        // Note: We don't clear localStorage here since the user may sign back in
+        // and expect their data to still be available
+    }
+
+    // Generate user-specific storage keys
+    getUserSpecificKey(baseKey) {
+        // Get user ID from auth manager if available
+        if (window.authManager && window.authManager.isAuthenticated()) {
+            const user = window.authManager.getCurrentUser();
+            if (user && user.id) {
+                return `${baseKey}_user_${user.id}`;
+            }
+        }
+        // Fallback to base key if no user (shouldn't happen in normal flow)
+        return baseKey;
     }
 
     addMessage(content, role, timestamp = new Date().toISOString()) {
-        // Assign a chat ID for new conversations (first user message)
+        // Assign a chat ID for completely new conversations (first user message with empty history)
         if (!this.currentChatId && role === 'user' && this.conversationHistory.length === 0) {
             this.currentChatId = Date.now().toString();
+            this.originalChatLength = 0; // Set original length for new conversations
         }
         
         const message = {
@@ -90,36 +112,38 @@ export class ChatManager {
         if (this.currentChatId) {
             const existingIndex = this.archivedChats.findIndex(chat => chat.id === this.currentChatId);
             if (existingIndex !== -1) {
-                // Only update if the conversation has been modified (new messages added)
-                if (this.conversationHistory.length > this.originalChatLength) {
-                    this.archivedChats[existingIndex] = {
-                        ...this.archivedChats[existingIndex],
-                        messages: [...this.conversationHistory],
-                        messageCount: this.conversationHistory.length,
-                        lastModified: new Date().toISOString()
-                    };
-                    this.saveArchivedChats();
-                }
+                // Always update the existing conversation with current messages
+                this.archivedChats[existingIndex] = {
+                    ...this.archivedChats[existingIndex],
+                    messages: [...this.conversationHistory],
+                    messageCount: this.conversationHistory.length,
+                    lastModified: new Date().toISOString()
+                };
+                
+                // Sort by lastModified date after updating
+                this.sortAndLimitArchivedChats();
+                
+                this.saveArchivedChats();
                 return;
             }
         }
         
         // Create new archived conversation
         const title = this.generateChatTitle(this.conversationHistory[0].content);
+        const now = new Date().toISOString();
         const archived = {
             id: this.currentChatId || Date.now().toString(),
             title: title,
             messages: [...this.conversationHistory],
-            created: new Date().toISOString(),
+            created: now,
+            lastModified: now,
             messageCount: this.conversationHistory.length
         };
         
-        this.archivedChats.unshift(archived); // Add to beginning
+        this.archivedChats.push(archived);
         
-        // Limit archived chats to prevent storage bloat
-        if (this.archivedChats.length > 50) {
-            this.archivedChats = this.archivedChats.slice(0, 50);
-        }
+        // Sort by lastModified date (most recent first) and limit storage
+        this.sortAndLimitArchivedChats();
         
         this.saveArchivedChats();
     }
@@ -161,8 +185,48 @@ export class ChatManager {
         this.archivedChats = [];
         this.currentChatId = null;
         this.originalChatLength = 0;
-        localStorage.removeItem('webllm_conversation_history');
-        localStorage.removeItem('webllm_archived_chats');
+        localStorage.removeItem(this.getUserSpecificKey('webllm_conversation_history'));
+        localStorage.removeItem(this.getUserSpecificKey('webllm_archived_chats'));
+        return true;
+    }
+
+    // Sort archived chats by lastModified date (most recent first) and limit count
+    sortAndLimitArchivedChats() {
+        // Sort by lastModified date, most recent first
+        this.archivedChats.sort((a, b) => {
+            const dateA = new Date(a.lastModified || a.created || 0);
+            const dateB = new Date(b.lastModified || b.created || 0);
+            return dateB.getTime() - dateA.getTime();
+        });
+        
+        // Limit archived chats to prevent storage bloat
+        if (this.archivedChats.length > 50) {
+            this.archivedChats = this.archivedChats.slice(0, 50);
+        }
+    }
+
+    // Clear all user data from localStorage (for cache clearing operations)
+    clearAllUserData() {
+        // Get all localStorage keys
+        const keysToRemove = [];
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            // Remove user-specific chat data
+            if (key && (key.includes('webllm_conversation_history_user_') || 
+                       key.includes('webllm_archived_chats_user_'))) {
+                keysToRemove.push(key);
+            }
+        }
+        
+        // Remove all user-specific keys
+        keysToRemove.forEach(key => localStorage.removeItem(key));
+        
+        // Clear in-memory data
+        this.conversationHistory = [];
+        this.archivedChats = [];
+        this.currentChatId = null;
+        this.originalChatLength = 0;
+        
         return true;
     }
 
@@ -194,9 +258,12 @@ export class ChatManager {
         try {
             const historyData = {
                 history: this.conversationHistory,
+                currentChatId: this.currentChatId,
+                originalChatLength: this.originalChatLength,
                 timestamp: new Date().toISOString()
             };
-            localStorage.setItem('webllm_conversation_history', JSON.stringify(historyData));
+            const storageKey = this.getUserSpecificKey('webllm_conversation_history');
+            localStorage.setItem(storageKey, JSON.stringify(historyData));
         } catch (error) {
             console.warn('Could not save conversation history:', error);
         }
@@ -204,10 +271,24 @@ export class ChatManager {
 
     loadConversationHistory() {
         try {
-            const savedData = localStorage.getItem('webllm_conversation_history');
+            const storageKey = this.getUserSpecificKey('webllm_conversation_history');
+            const savedData = localStorage.getItem(storageKey);
             if (savedData) {
                 const historyData = JSON.parse(savedData);
                 this.conversationHistory = historyData.history || [];
+                
+                // Restore chat tracking information if available
+                if (historyData.currentChatId) {
+                    this.currentChatId = historyData.currentChatId;
+                    this.originalChatLength = historyData.originalChatLength || this.conversationHistory.length;
+                } else {
+                    // Legacy data without tracking info - create ID if conversation exists
+                    if (this.conversationHistory.length > 0) {
+                        this.currentChatId = Date.now().toString();
+                        this.originalChatLength = this.conversationHistory.length;
+                    }
+                }
+                
                 return this.conversationHistory;
             }
         } catch (error) {
@@ -219,9 +300,13 @@ export class ChatManager {
 
     loadArchivedChats() {
         try {
-            const savedChats = localStorage.getItem('webllm_archived_chats');
+            const storageKey = this.getUserSpecificKey('webllm_archived_chats');
+            const savedChats = localStorage.getItem(storageKey);
             if (savedChats) {
                 this.archivedChats = JSON.parse(savedChats);
+                
+                // Sort loaded chats by lastModified date (for backward compatibility and ordering)
+                this.sortAndLimitArchivedChats();
             }
         } catch (error) {
             console.warn('Could not load archived chats:', error);
@@ -231,7 +316,8 @@ export class ChatManager {
 
     saveArchivedChats() {
         try {
-            localStorage.setItem('webllm_archived_chats', JSON.stringify(this.archivedChats));
+            const storageKey = this.getUserSpecificKey('webllm_archived_chats');
+            localStorage.setItem(storageKey, JSON.stringify(this.archivedChats));
         } catch (error) {
             console.warn('Could not save archived chats:', error);
         }
