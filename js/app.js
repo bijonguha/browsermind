@@ -678,7 +678,10 @@ class BrowserMindApp {
     }
 }
 
-// Initialize the app when the page loads
-document.addEventListener('DOMContentLoaded', () => {
-    window.app = new BrowserMindApp();
-});
+// Export the class for use by init.js
+export default BrowserMindApp;
+
+// Legacy initialization (disabled when using init.js)
+// document.addEventListener('DOMContentLoaded', () => {
+//     window.app = new BrowserMindApp();
+// });

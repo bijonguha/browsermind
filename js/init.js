@@ -103,8 +103,8 @@ class BrowserMindInit {
         }
         
         // Import and start the main application
-        const { default: App } = await import('./app.js');
-        window.app = new App();
+        const { default: BrowserMindApp } = await import('./app.js');
+        window.app = new BrowserMindApp();
     }
 
     updateProgress(step, message) {
