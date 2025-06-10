@@ -10,7 +10,7 @@ class AuthManager {
             onSignIn: [],
             onSignOut: []
         };
-        this.browserInfo = this.detectBrowser();
+        this.browserInfo = window.BrowserUtils ? window.BrowserUtils.detectBrowser() : this.detectBrowser();
         
         // Wait for config to be available
         this.waitForConfig();
@@ -561,6 +561,11 @@ class AuthManager {
 
     // Get user initials for avatar fallback
     getUserInitials(name) {
+        return window.BrowserUtils ? window.BrowserUtils.getUserInitials(name) : this.fallbackGetInitials(name);
+    }
+
+    // Fallback method if utils not available
+    fallbackGetInitials(name) {
         if (!name) return '?';
         const names = name.split(' ');
         if (names.length === 1) {

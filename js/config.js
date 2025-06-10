@@ -1,5 +1,5 @@
 /**
- * MisterMD Configuration System
+ * BrowserMind Configuration System
  * Centralized configuration for all application settings
  */
 
@@ -494,10 +494,9 @@ class AppConfig {
 // Create global configuration instance
 window.appConfig = new AppConfig();
 
-// Export for ES6 modules if needed
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = AppConfig;
-}
+// Export for ES6 modules
+export { AppConfig };
+export default window.appConfig;
 
 // Convenient global functions for runtime configuration
 window.setEnvironment = (env) => window.appConfig.setEnvironment(env);
@@ -506,75 +505,9 @@ window.setLogLevel = (level) => window.appConfig.setLogLevel(level);
 window.getEnvironment = () => window.appConfig.get('app.environment');
 window.getLogLevel = () => window.appConfig.get('logging.level');
 
-// Help system
-window.showLoggingHelp = () => {
-    console.clear();
-    console.log('%c🚀 BrowserMind Logging System - Quick Reference', 'font-size: 16px; font-weight: bold; color: #4A76C4;');
-    console.log('');
-    
-    console.log('%c📊 Current Status', 'font-weight: bold; color: #059669;');
-    console.log(`Environment: ${window.getEnvironment()}`);
-    console.log(`Log Level: ${window.getLogLevel()}`);
-    console.log(`Debug Mode: ${window.appConfig.get('development.debug')}`);
-    console.log('');
-    
-    console.log('%c🎯 Change Environment', 'font-weight: bold; color: #DC2626;');
-    console.log('setEnvironment("development")  // Full debug mode');
-    console.log('setEnvironment("staging")      // Testing mode');
-    console.log('setEnvironment("production")   // Minimal logging');
-    console.log('');
-    
-    console.log('%c📈 Change Log Level', 'font-weight: bold; color: #7C2D12;');
-    console.log('setLogLevel("error")    // Only errors');
-    console.log('setLogLevel("warn")     // Errors + warnings');
-    console.log('setLogLevel("info")     // Errors + warnings + info');
-    console.log('setLogLevel("debug")    // Everything except trace');
-    console.log('setLogLevel("trace")    // Everything');
-    console.log('');
-    
-    console.log('%c🔧 Debug Commands', 'font-weight: bold; color: #7C3AED;');
-    console.log('setDebugMode(true)      // Enable debug output');
-    console.log('debugBrowserMind()      // Full application debug');
-    console.log('debugChat()             // Chat-specific debug');
-    console.log('showLoggingHelp()       // Show this help');
-    console.log('');
-    
-    console.log('%c🚨 Quick Fixes', 'font-weight: bold; color: #EA580C;');
-    console.log('// No logs showing?');
-    console.log('setLogLevel("debug"); setDebugMode(true);');
-    console.log('');
-    console.log('// Too many logs?');
-    console.log('setLogLevel("warn"); setEnvironment("production");');
-    console.log('');
-    console.log('// Need full debug?');
-    console.log('setEnvironment("development"); debugBrowserMind();');
-    console.log('');
-    
-    console.log('%c💡 Pro Tips', 'font-style: italic; color: #6B7280;');
-    console.log('• All changes persist across page reloads');
-    console.log('• Use URL parameter ?env=development for temporary testing');
-    console.log('• Production mode automatically reports errors to analytics');
-    console.log('• See LOGGING.md for complete documentation');
-};
-
-// Alias for convenience
-window.logHelp = window.showLoggingHelp;
-
 console.log('🔧 Application configuration loaded');
 
 // Show current environment info
 const env = window.appConfig.get('app.environment');
 const version = window.appConfig.get('app.version');
-
-if (env === 'production') {
-    console.log(`BrowserMind v${version} - Production`);
-} else {
-    console.log(`🚀 BrowserMind v${version} - ${env.toUpperCase()}`);
-    console.log('📊 Debug Info:', window.appConfig.getDebugInfo());
-    console.log('💡 Runtime commands available:');
-    console.log('  - setEnvironment("development|staging|production")');
-    console.log('  - setDebugMode(true|false)');
-    console.log('  - setLogLevel("error|warn|info|debug|trace")');
-    console.log('  - debugBrowserMind() for full debug info');
-    console.log('  - showLoggingHelp() or logHelp() for quick reference');
-}
+console.log(`🚀 BrowserMind v${version} - ${env.toUpperCase()}`);
