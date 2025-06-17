@@ -54,12 +54,6 @@ export class UIComponents {
         
         // Initialize AI status close handler
         this.initializeAIStatusHandler();
-        
-        // Add temporary test method to window for debugging
-        window.testAIStatus = () => {
-            console.log('🧪 Testing AI status transformation');
-            this.transformProgressToStatus();
-        };
     }
 
     initializeAIStatusHandler() {
@@ -72,21 +66,17 @@ export class UIComponents {
 
     showAIStatusCompact() {
         if (this.aiStatusCompact) {
-            console.log('🎉 Showing AI Ready status indicator');
             this.aiStatusCompact.classList.add('show');
             
             // Auto-hide after 8 seconds
             setTimeout(() => {
                 this.hideAIStatusCompact();
             }, 8000);
-        } else {
-            console.warn('⚠️ AI status compact element not found');
         }
     }
 
     hideAIStatusCompact() {
         if (this.aiStatusCompact) {
-            console.log('👋 Hiding AI Ready status indicator');
             this.aiStatusCompact.classList.remove('show');
             this.aiStatusCompact.classList.add('hide');
             
@@ -99,19 +89,14 @@ export class UIComponents {
 
     transformProgressToStatus() {
         if (!this.progressContainer) {
-            console.warn('⚠️ Progress container not found for transformation');
             return;
         }
-        
-        console.log('🔄 Transforming progress container to status indicator');
         
         // Add completing animation to progress container
         this.progressContainer.classList.add('completing');
         
         // Wait for animation to complete, then show status indicator
         setTimeout(() => {
-            console.log('📦 Progress container minimized, showing status indicator');
-            
             // Completely remove from DOM to ensure layout reflows
             this.progressContainer.style.display = 'none';
             this.progressContainer.remove();
@@ -122,16 +107,9 @@ export class UIComponents {
     }
 
     recreateProgressContainer() {
-        console.log('🔧 Starting progress container recreation...');
-        
         // Find the main content container where progress should be inserted
         const mainContent = document.querySelector('.main-content');
         const chatContainer = document.querySelector('.chat-container');
-        
-        console.log('🔍 DOM elements found:', {
-            mainContent: !!mainContent,
-            chatContainer: !!chatContainer
-        });
         
         if (!mainContent || !chatContainer) {
             console.error('⚠️ Cannot recreate progress container - main content not found');
@@ -202,14 +180,6 @@ export class UIComponents {
         this.progressPercent = document.getElementById('progressPercent');
         this.progressTime = document.getElementById('progressTime');
         this.progressTip = document.getElementById('progressTip');
-        
-        console.log('✅ Progress container recreated successfully');
-        console.log('🔍 Element references updated:', {
-            progressContainer: !!this.progressContainer,
-            progressFill: !!this.progressFill,
-            progressMainText: !!this.progressMainText,
-            progressSubText: !!this.progressSubText
-        });
     }
 
     updateStatus(text, type = 'loading') {
@@ -225,18 +195,10 @@ export class UIComponents {
     }
 
     showProgress(show = true) {
-        console.log('🚨 showProgress() called with show =', show);
-        console.log('🔍 Progress container state check:', {
-            exists: !!this.progressContainer,
-            inDOM: this.progressContainer ? document.contains(this.progressContainer) : false,
-            show: show
-        });
-        
         // Check if container exists AND is in DOM
         const needsRecreation = !this.progressContainer || !document.contains(this.progressContainer);
         
         if (needsRecreation && show) {
-            console.log('🔄 Progress container missing or detached, recreating for model switch...');
             this.recreateProgressContainer();
             if (!this.progressContainer) {
                 console.error('❌ Failed to recreate progress container');
@@ -247,11 +209,7 @@ export class UIComponents {
             return;
         }
         
-        console.log(`🎯 Setting progress visibility: ${show}`);
-        
         if (show) {
-            console.log('📦 Showing progress container...');
-            
             // Reset state for new progress session
             this.startTime = null;
             this.progressCompleted = false;
@@ -274,20 +232,11 @@ export class UIComponents {
             this.progressContainer.style.display = 'flex';
             this.progressContainer.classList.add('show');
             
-            console.log('🎨 Applied styles:', {
-                display: this.progressContainer.style.display,
-                hasShowClass: this.progressContainer.classList.contains('show'),
-                isInDOM: document.contains(this.progressContainer),
-                computedOpacity: window.getComputedStyle(this.progressContainer).opacity,
-                computedVisibility: window.getComputedStyle(this.progressContainer).visibility
-            });
-            
             // Ensure it's visible in the next frame
             requestAnimationFrame(() => {
                 this.progressContainer.style.opacity = '1';
                 this.progressContainer.style.visibility = 'visible';
                 this.progressContainer.style.transform = 'translateY(0)';
-                console.log('🎭 Final visibility styles applied');
             });
         } else {
             this.progressContainer.classList.remove('show');
@@ -307,13 +256,10 @@ export class UIComponents {
             return;
         }
         
-        console.log(`📊 Updating progress: ${percentage}% - ${text}`);
-        
         // Mark as completed when we reach 100% or get "Ready" message
         if (percentage >= 100 || (text && (text.includes('Ready') || text.includes('🎉')))) {
             if (!this.progressCompleted) {
                 this.progressCompleted = true;
-                console.log('✅ Progress completed! Scheduling transformation...');
                 // Trigger transformation after a short delay to let final progress update show
                 setTimeout(() => {
                     this.transformProgressToStatus();
@@ -878,7 +824,6 @@ export class UIComponents {
 
     updateHeaderModelName(modelName) {
         if (!this.headerModelInfo) {
-            console.warn('Header model info element not found');
             return;
         }
         
@@ -897,6 +842,5 @@ export class UIComponents {
         }
         
         this.headerModelInfo.textContent = shortName;
-        console.log(`🏷️ Updated header model name to: ${shortName}`);
     }
 }

@@ -21,18 +21,12 @@ class AuthManager {
      * Detect browser for Chrome-specific fixes
      */
     detectBrowser() {
-        const userAgent = navigator.userAgent;
-        const isChrome = /Chrome/.test(userAgent) && /Google Inc/.test(navigator.vendor);
-        const isEdge = /Edg/.test(userAgent);
-        const isFirefox = /Firefox/.test(userAgent);
-        const isSafari = /Safari/.test(userAgent) && !/Chrome/.test(userAgent);
-        
-        return {
-            isChrome,
-            isEdge,
-            isFirefox,
-            isSafari,
-            userAgent
+        return window.BrowserUtils ? window.BrowserUtils.detectBrowser() : {
+            isChrome: /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor),
+            isEdge: /Edg/.test(navigator.userAgent),
+            isFirefox: /Firefox/.test(navigator.userAgent),
+            isSafari: /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent),
+            userAgent: navigator.userAgent
         };
     }
     
@@ -571,11 +565,10 @@ class AuthManager {
 
     // Get user initials for avatar fallback
     getUserInitials(name) {
-        return window.BrowserUtils ? window.BrowserUtils.getUserInitials(name) : this.fallbackGetInitials(name);
-    }
-
-    // Fallback method if utils not available
-    fallbackGetInitials(name) {
+        if (window.BrowserUtils) {
+            return window.BrowserUtils.getUserInitials(name);
+        }
+        // Fallback if utils not available
         if (!name) return '?';
         const names = name.split(' ');
         if (names.length === 1) {

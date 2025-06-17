@@ -4,7 +4,6 @@ import { performanceMonitor } from './performance-monitor.js';
 class BrowserMindApp {
     constructor() {
         console.log('🚀 BrowserMind initializing...');
-        console.log('📊 Loading strategy:', lazyLoader.getStrategyInfo());
         
         // Initialize core components first
         this.engine = null;
@@ -55,8 +54,6 @@ class BrowserMindApp {
      * Load critical components first
      */
     async loadCriticalComponents() {
-        console.log('🔄 Loading critical components...');
-        
         try {
             // Load core modules
             const [
@@ -72,8 +69,6 @@ class BrowserMindApp {
             this.ui = new UIComponents();
             this.sidebar = new SidebarManager(this.ui);
             this.chatManager = new ChatManager();
-            
-            console.log('✅ Critical components loaded');
         } catch (error) {
             console.error('❌ Failed to load critical components:', error);
             throw error;
@@ -84,8 +79,6 @@ class BrowserMindApp {
      * Initialize core features
      */
     async initializeCoreFeatures() {
-        console.log('🔄 Initializing core features...');
-        
         this.setupEventListeners();
         this.startNewConversation();
         this.loadVersionInfo();
@@ -104,8 +97,6 @@ class BrowserMindApp {
         
         // Initialize engine loading (but don't wait for it)
         this.initializeEngineAsync();
-        
-        console.log('✅ Core features initialized');
     }
 
     /**
@@ -124,10 +115,9 @@ class BrowserMindApp {
         // Optimize for mobile if detected
         performanceMonitor.optimizeForMobile();
         
-        // Log initial performance metrics
+        // Log initial performance metrics after 5 seconds
         setTimeout(() => {
-            const metrics = performanceMonitor.getMetrics();
-            console.log('📊 Performance metrics:', metrics);
+            performanceMonitor.getMetrics();
         }, 5000);
     }
 
@@ -173,8 +163,6 @@ class BrowserMindApp {
      * Handle low FPS scenarios (silent optimization)
      */
     handleLowFPS(fps) {
-        console.log(`📊 Performance: Optimizing for better performance (FPS: ${fps.toFixed(1)})`);
-        
         // Apply optimizations silently - no chat messages
         this.optimizeChatAnimations();
     }
@@ -201,8 +189,6 @@ class BrowserMindApp {
      * Handle long tasks (silent optimization)
      */
     handleLongTask(duration) {
-        console.warn(`⏱️ Long task detected: ${duration}ms`);
-        
         // Apply optimizations silently - no chat messages
         this.enableTaskScheduling = true;
     }
@@ -211,11 +197,7 @@ class BrowserMindApp {
      * Handle layout shifts with throttling
      */
     handleLayoutShift(score) {
-        console.warn(`📐 Layout shift detected: ${score}`);
-        
         // Apply optimizations silently - no chat messages
-        // Performance optimizations are applied without user notification
-        
         // Always apply optimizations regardless of message throttling
         this.preventLayoutShifts();
     }
@@ -327,8 +309,6 @@ class BrowserMindApp {
      * Load non-critical features on idle
      */
     loadNonCriticalFeatures() {
-        console.log('🔄 Scheduling non-critical features...');
-        
         // Load on idle or after delay
         if ('requestIdleCallback' in window) {
             requestIdleCallback(() => {
@@ -345,8 +325,6 @@ class BrowserMindApp {
      * Initialize non-critical features
      */
     async initializeNonCriticalFeatures() {
-        console.log('🔄 Loading non-critical features...');
-        
         try {
             // Load auth and markdown asynchronously
             await Promise.allSettled([
@@ -356,8 +334,6 @@ class BrowserMindApp {
             
             // Load external resources
             lazyLoader.loadNonCriticalResources();
-            
-            console.log('✅ Non-critical features loaded');
         } catch (error) {
             console.warn('⚠️ Some non-critical features failed to load:', error);
         }
@@ -367,8 +343,6 @@ class BrowserMindApp {
      * Fallback initialization for failed progressive loading
      */
     async fallbackInitialization() {
-        console.log('🔄 Fallback initialization...');
-        
         try {
             // Direct imports as fallback
             const { WebLLMEngine } = await import('./webllm-engine.js');
@@ -387,8 +361,6 @@ class BrowserMindApp {
             
             await this.waitForDOMReady();
             this.initializeEngine();
-            
-            console.log('✅ Fallback initialization completed');
         } catch (error) {
             console.error('❌ Fallback initialization failed:', error);
             this.showCriticalError(error);
@@ -614,22 +586,13 @@ ${error.stack}
 
     async initializeEngine() {
         try {
-            console.log('🔧 Starting engine initialization...');
-            
             // Check browser compatibility first
             if (!this.checkBrowserCompatibility()) {
                 this.ui.addMessage('Your browser is not compatible with BrowserMind. Please use a modern browser like Chrome 113+, Edge 113+, or Safari 17+.', 'system', false);
                 return;
             }
             
-            console.log('🔍 Checking UI elements availability:', {
-                progressContainer: !!this.ui.progressContainer,
-                progressFill: !!this.ui.progressFill,
-                progressText: !!this.ui.progressText
-            });
-            
             // Show progress immediately with enhanced visibility
-            console.log('🎬 Showing initial progress...');
             this.ui.showProgress(true);
             this.ui.updateProgress(0, 'Initializing...');
             
@@ -639,16 +602,12 @@ ${error.stack}
             await this.engine.initializeEngine(
                 (report) => {
                     const percentage = Math.round(report.progress * 100);
-                    console.log(`📈 Progress: ${percentage}% - ${report.text}`);
                     this.ui.updateProgress(percentage, report.text || 'Loading...');
                 },
                 (text, type) => {
-                    console.log(`📊 Status: ${text} (${type})`);
                     this.ui.updateStatus(text, type);
                 }
             );
-
-            console.log('✅ Engine initialization completed');
             
             // Show completion state briefly before hiding
             this.ui.updateProgress(100, 'Ready!');
@@ -1193,29 +1152,13 @@ ${error.stack}
         // Check ES6+ features using centralized detection
         return window.BrowserUtils ? 
             window.BrowserUtils.checkES6Support() : 
-            this.fallbackES6Check();
-    }
-
-    /**
-     * Fallback ES6 check if BrowserUtils not available
-     */
-    fallbackES6Check() {
-        try {
-            eval("() => {}");
-            if (typeof Promise === 'undefined') return false;
-            eval("`test`");
-            return true;
-        } catch (e) {
-            return false;
-        }
+            window.browserCompatibility?.fallbackES6Check?.() || true;
     }
 
     /**
      * Initialize PWA features
      */
     initializePWAFeatures() {
-        console.log('📱 Initializing PWA features...');
-        
         // Handle PWA install prompt
         this.handleInstallPrompt();
         
@@ -1230,8 +1173,6 @@ ${error.stack}
         
         // Add PWA utilities to UI
         this.addPWAUtilities();
-        
-        console.log('✅ PWA features initialized');
     }
 
     /**
@@ -1240,8 +1181,6 @@ ${error.stack}
     handleInstallPrompt() {
         // Listen for beforeinstallprompt event
         window.addEventListener('beforeinstallprompt', (e) => {
-            console.log('📱 PWA install prompt available');
-            
             // Prevent the mini-infobar from appearing on mobile
             e.preventDefault();
             
