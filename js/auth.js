@@ -6,6 +6,7 @@ class AuthManager {
         this.user = null;
         this.isInitialized = false;
         this.config = null;
+        this.hasSignedOut = false; // Track explicit sign-out actions
         this.callbacks = {
             onSignIn: [],
             onSignOut: []
@@ -128,6 +129,7 @@ class AuthManager {
             };
 
             this.user = user;
+            this.hasSignedOut = false; // Reset sign-out flag when user signs in
             this.saveUserToStorage(user);
             this.updateUI();
             this.triggerCallbacks('onSignIn', user);
@@ -340,6 +342,7 @@ class AuthManager {
     // Sign out user
     signOut() {
         this.user = null;
+        this.hasSignedOut = true; // Mark that user has explicitly signed out
         this.clearUserFromStorage();
         this.updateUI();
         this.triggerCallbacks('onSignOut');
@@ -384,6 +387,7 @@ class AuthManager {
                 const tokenAge = Date.now() - user.timestamp;
                 if (tokenAge < sessionTimeout) {
                     this.user = user;
+                    this.hasSignedOut = false; // Reset sign-out flag when loading valid session
                     this.updateUI();
                     if (window.log) {
                         window.log.info(`User loaded from storage: ${user.name}`, 'Auth');
@@ -498,8 +502,10 @@ class AuthManager {
                 window.app.chatManager.clearForUnauthenticatedUser();
                 // Clear the main chat UI to start fresh
                 window.app.ui.clearMessages(false);
-                // Add sign out message to the fresh UI
-                window.app.ui.addMessage('👋 You have signed out successfully. Sign in again to access your conversations.', 'system', false);
+                // Add sign out message only if user has explicitly signed out
+                if (this.hasSignedOut) {
+                    window.app.ui.addMessage('👋 You have signed out successfully. Sign in again to access your conversations.', 'system', false);
+                }
                 // Hide chat history and show auth required message
                 window.app.updateChatHistoryDisplay();
             }

@@ -845,13 +845,17 @@ ${error.stack}
         try {
             this.ui.setInputEnabled(false);
             this.ui.showProgress(true);
-            this.ui.updateProgress(0, 'Preparing model switch...');
+            this.ui.updateProgress(0, 'Setting up your AI');
             this.sidebar.renderModelList(this.engine.availableModels, this.engine.currentModel);
+            
+            // Add a small delay to ensure progress is visible before starting operations
+            await new Promise(resolve => setTimeout(resolve, 300));
 
             await this.engine.switchModel(
                 modelId,
                 (report) => {
                     const percentage = Math.round(report.progress * 100);
+                    // Let the original WebLLM text go through parseProgressText for full display
                     this.ui.updateProgress(percentage, report.text || 'Loading...');
                 },
                 (text, type) => this.ui.updateStatus(text, type)
@@ -860,18 +864,25 @@ ${error.stack}
             this.sidebar.renderModelList(this.engine.availableModels, this.engine.currentModel);
             this.sidebar.updateCurrentModelDisplay(this.engine.getCurrentModel());
 
-            this.ui.showProgress(false);
-            this.ui.setInputEnabled(true);
+            // Show completion state briefly before hiding (similar to initial loading)
+            this.ui.updateProgress(100, 'Model loaded successfully!');
+            
+            // Add delay to ensure users see the completion state
+            setTimeout(() => {
+                this.ui.showProgress(false);
+                this.ui.setInputEnabled(true);
 
-            // Update header with new model name
-            this.ui.updateHeaderModelName(model.name);
+                // Update header with new model name
+                this.ui.updateHeaderModelName(model.name);
 
-            // Add system message about model switch
-            this.ui.addMessage(`🔄 Switched to ${model.name}! Model loaded and ready.`, 'system', false);
+                // Add system message about model switch
+                this.ui.addMessage(`🔄 Switched to ${model.name}! Model loaded and ready.`, 'system', false);
+            }, 1500); // 1.5 second delay to show completion state
 
         } catch (error) {
             this.sidebar.renderModelList(this.engine.availableModels, this.engine.currentModel);
             this.ui.showProgress(false);
+            this.ui.setInputEnabled(true);
             this.ui.addMessage(`❌ Failed to switch to ${model.name}. Please try again or select a different model.`, 'system', false);
         }
     }

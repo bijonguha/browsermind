@@ -121,6 +121,97 @@ export class UIComponents {
         }, 1200); // Match the animation duration
     }
 
+    recreateProgressContainer() {
+        console.log('🔧 Starting progress container recreation...');
+        
+        // Find the main content container where progress should be inserted
+        const mainContent = document.querySelector('.main-content');
+        const chatContainer = document.querySelector('.chat-container');
+        
+        console.log('🔍 DOM elements found:', {
+            mainContent: !!mainContent,
+            chatContainer: !!chatContainer
+        });
+        
+        if (!mainContent || !chatContainer) {
+            console.error('⚠️ Cannot recreate progress container - main content not found');
+            return;
+        }
+        
+        // Create new progress container from the original HTML structure
+        const progressContainer = document.createElement('div');
+        progressContainer.className = 'progress-container';
+        progressContainer.id = 'progressContainer';
+        
+        progressContainer.innerHTML = `
+            <div class="progress-info">
+                <div class="progress-header">
+                    <div class="progress-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                            <polyline points="3.27,6.96 12,12.01 20.73,6.96"/>
+                            <line x1="12" y1="22.08" x2="12" y2="12"/>
+                        </svg>
+                    </div>
+                    <div class="progress-details">
+                        <h3>Setting up your AI</h3>
+                    </div>
+                </div>
+                
+                <div class="progress-status">
+                    <p class="progress-main-text" id="progressMainText">Preparing your local AI assistant...</p>
+                    <p class="progress-sub-text" id="progressSubText">This may take a moment on first visit</p>
+                    
+                    <div class="progress-stats" id="progressStats" style="display: none;">
+                        <div class="progress-stat">
+                            <span class="progress-stat-label">Downloaded</span>
+                            <span class="progress-stat-value" id="progressDownloaded">0 MB</span>
+                        </div>
+                        <div class="progress-stat">
+                            <span class="progress-stat-label">Progress</span>
+                            <span class="progress-stat-value" id="progressPercent">0%</span>
+                        </div>
+                        <div class="progress-stat">
+                            <span class="progress-stat-label">Time</span>
+                            <span class="progress-stat-value" id="progressTime">0s</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                
+                <div class="progress-tip" id="progressTip" style="display: none;">
+                    <span class="progress-tip-icon">💡</span>
+                    <p class="progress-tip-text">First-time setup downloads the AI model to your browser. Future visits will be much faster!</p>
+                </div>
+            </div>
+        `;
+        
+        // Insert before chat container
+        mainContent.insertBefore(progressContainer, chatContainer);
+        
+        // Re-initialize element references
+        this.progressContainer = progressContainer;
+        this.progressFill = document.getElementById('progressFill');
+        this.progressMainText = document.getElementById('progressMainText');
+        this.progressSubText = document.getElementById('progressSubText');
+        this.progressStats = document.getElementById('progressStats');
+        this.progressDownloaded = document.getElementById('progressDownloaded');
+        this.progressPercent = document.getElementById('progressPercent');
+        this.progressTime = document.getElementById('progressTime');
+        this.progressTip = document.getElementById('progressTip');
+        
+        console.log('✅ Progress container recreated successfully');
+        console.log('🔍 Element references updated:', {
+            progressContainer: !!this.progressContainer,
+            progressFill: !!this.progressFill,
+            progressMainText: !!this.progressMainText,
+            progressSubText: !!this.progressSubText
+        });
+    }
+
     updateStatus(text, type = 'loading') {
         if (!this.statusElement) {
             console.warn('Status element not found');
@@ -134,7 +225,24 @@ export class UIComponents {
     }
 
     showProgress(show = true) {
-        if (!this.progressContainer) {
+        console.log('🚨 showProgress() called with show =', show);
+        console.log('🔍 Progress container state check:', {
+            exists: !!this.progressContainer,
+            inDOM: this.progressContainer ? document.contains(this.progressContainer) : false,
+            show: show
+        });
+        
+        // Check if container exists AND is in DOM
+        const needsRecreation = !this.progressContainer || !document.contains(this.progressContainer);
+        
+        if (needsRecreation && show) {
+            console.log('🔄 Progress container missing or detached, recreating for model switch...');
+            this.recreateProgressContainer();
+            if (!this.progressContainer) {
+                console.error('❌ Failed to recreate progress container');
+                return;
+            }
+        } else if (!this.progressContainer) {
             console.warn('Progress container not found');
             return;
         }
@@ -142,6 +250,8 @@ export class UIComponents {
         console.log(`🎯 Setting progress visibility: ${show}`);
         
         if (show) {
+            console.log('📦 Showing progress container...');
+            
             // Reset state for new progress session
             this.startTime = null;
             this.progressCompleted = false;
@@ -164,11 +274,20 @@ export class UIComponents {
             this.progressContainer.style.display = 'flex';
             this.progressContainer.classList.add('show');
             
+            console.log('🎨 Applied styles:', {
+                display: this.progressContainer.style.display,
+                hasShowClass: this.progressContainer.classList.contains('show'),
+                isInDOM: document.contains(this.progressContainer),
+                computedOpacity: window.getComputedStyle(this.progressContainer).opacity,
+                computedVisibility: window.getComputedStyle(this.progressContainer).visibility
+            });
+            
             // Ensure it's visible in the next frame
             requestAnimationFrame(() => {
                 this.progressContainer.style.opacity = '1';
                 this.progressContainer.style.visibility = 'visible';
                 this.progressContainer.style.transform = 'translateY(0)';
+                console.log('🎭 Final visibility styles applied');
             });
         } else {
             this.progressContainer.classList.remove('show');
@@ -232,7 +351,8 @@ export class UIComponents {
                     showStats: true,
                     downloaded: mbFetched,
                     time: seconds,
-                    showTip: true
+                    showTip: true,
+                    tipText: 'First-time setup downloads the AI model to your browser. Future visits will be much faster!'
                 };
             }
         }
@@ -255,6 +375,17 @@ export class UIComponents {
                 showStats: true,
                 showTip: false,
                 isCompleting: true
+            };
+        }
+        
+        // Handle "Setting up your AI" initial message
+        if (text.includes('Setting up your AI')) {
+            return {
+                main: 'Setting up your AI',
+                sub: 'Getting your AI ready - this creates a local copy for privacy',
+                showStats: false,
+                showTip: true,
+                tipText: 'AI models are downloaded to your browser for privacy. Switching models may require a download.'
             };
         }
         
@@ -345,9 +476,20 @@ export class UIComponents {
             }
         }
         
-        // Show/hide tip
+        // Show/hide tip and update text if provided
         if (this.progressTip) {
-            this.progressTip.style.display = info.showTip ? 'block' : 'none';
+            if (info.showTip) {
+                this.progressTip.style.display = 'block';
+                // Update tip text if provided
+                if (info.tipText) {
+                    const tipTextElement = this.progressTip.querySelector('.progress-tip-text');
+                    if (tipTextElement) {
+                        tipTextElement.textContent = info.tipText;
+                    }
+                }
+            } else {
+                this.progressTip.style.display = 'none';
+            }
         }
     }
 
